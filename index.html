@@ -2577,6 +2577,7 @@ body.menu-open{
 </footer>
 <script>
 (function () {
+  const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
   const ptTrack = document.getElementById('ptTrack');
   const ptProgress = document.getElementById('ptProgress');
   const ptCurEl = document.getElementById('ptCur');
@@ -2740,33 +2741,61 @@ body.menu-open{
     if (!isOpen) item.classList.add('open');
   };
 
-  window.handleForm = function (e) {
+  window.handleForm = async function(e) {
     e.preventDefault();
     const form = e.target;
-    const btn = form.querySelector('button[type="submit"]');
-    if (!btn) return;
-    const nameInput = form.querySelector('input[placeholder="Как вас зовут?"]');
+
+    const nameInput  = form.querySelector('input[placeholder="Как вас зовут?"]');
     const phoneInput = form.querySelector('input[placeholder="+7 (___) ___-__-__"]');
     let hasError = false;
-    [nameInput, phoneInput].forEach(function(field){
+
+    [nameInput, phoneInput].forEach(function(field) {
       if (!field) return;
-      const wrap = field.closest('.fgroup');
+      const wrap  = field.closest('.fgroup');
       const error = wrap ? wrap.querySelector('.form-field-error') : null;
       const empty = !field.value || !field.value.trim();
       field.classList.toggle('input-error', empty);
       if (error) error.classList.toggle('show', empty);
       if (empty) hasError = true;
     });
+
     if (hasError) return;
-    btn.textContent = 'Заявка отправлена ✓';
-    btn.style.background = '#1a6b1a';
-    btn.disabled = true;
-    form.classList.add('form-submitted');
-    form.querySelectorAll('input, select, textarea').forEach(function(field){
-      if (field.type !== 'hidden') field.disabled = true;
+
+    const fields = form.querySelectorAll('input, textarea, select');
+    let text = '📬 *Новая заявка с сайта Мируся*\n\n';
+    fields.forEach(function(f) {
+      if (f.value && f.value.trim() && f.type !== 'file' && f.type !== 'hidden') {
+        const label = f.closest('.fgroup')?.querySelector('label')?.textContent || f.placeholder || '';
+        if (label) text += `*${label}:* ${f.value.trim()}\n`;
+      }
     });
-    const success = form.querySelector('.form-success');
-    if (success) success.classList.add('show');
+    text += `\n🕐 ${new Date().toLocaleString('ru-RU')}`;
+
+    const btn = form.querySelector('button[type="submit"]');
+    const origText = btn.textContent;
+    btn.textContent = 'Отправляем...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const json = await res.json();
+
+      if (json.ok) {
+        form.querySelector('.form-success')?.classList.add('show');
+        btn.textContent = 'Заявка отправлена ✓';
+        btn.style.background = '#1a6b1a';
+      } else {
+        throw new Error('error');
+      }
+    } catch(err) {
+      btn.textContent = origText;
+      btn.disabled = false;
+      alert('Ошибка отправки, попробуйте позже или позвоните нам.');
+    }
   };
 
   const sections = document.querySelectorAll('section[id]');
@@ -2790,6 +2819,7 @@ body.menu-open{
 })();
 (function(){
   'use strict';
+  const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
 
   /* ── ЦЕНОВАЯ МАТРИЦА ── */
   const PM = [
@@ -3249,7 +3279,7 @@ body.menu-open{
   });
 
   /* ── ОТПРАВКА ── */
-  submitBtn.addEventListener('click',()=>{
+  submitBtn.addEventListener('click', async ()=>{
     const nameEl=$('kfLeadName'), phoneEl=$('kfLeadPhone');
     let ok=true;
     const ne=!nameEl.value.trim();
@@ -3288,7 +3318,27 @@ body.menu-open{
       grandTotal: grand,
       deadline: st.deadline,
     };
-    console.log('→ CRM payload:', payload);
+    let tgText = '🛒 *Заказ из конфигуратора Мируся*\n\n';
+    tgText += '*Позиции:*\n';
+    payload.items.forEach(function(i) {
+      tgText += `• ${i.name} · ${i.meta} — ${i.sub.toLocaleString('ru-RU')} ₽\n`;
+      if (i.fileInfo) tgText += `  _${i.fileInfo}_\n`;
+    });
+    tgText += `\n*Итого:* ${payload.grandTotal.toLocaleString('ru-RU')} ₽`;
+    tgText += `\n*Сроки:* ${payload.deadline === 'urgent' ? 'Срочно' : 'Стандарт'}`;
+    tgText += `\n\n👤 *Контакт:*`;
+    if (payload.org)     tgText += `\nКомпания: ${payload.org}`;
+    tgText += `\nИмя: ${payload.name}`;
+    tgText += `\nТелефон: ${payload.phone}`;
+    if (payload.email)   tgText += `\nEmail: ${payload.email}`;
+    if (payload.comment) tgText += `\nКомментарий: ${payload.comment}`;
+    tgText += `\n\n🕐 ${new Date().toLocaleString('ru-RU')}`;
+
+    await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: tgText })
+    });
     $('kfSubmitSuccess').classList.add('show');
     submitBtn.textContent='Заявка отправлена ✓';
     submitBtn.disabled=true;
