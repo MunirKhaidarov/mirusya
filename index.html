@@ -2577,7 +2577,6 @@ body.menu-open{
 </footer>
 <script>
 (function () {
-  const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
   const ptTrack = document.getElementById('ptTrack');
   const ptProgress = document.getElementById('ptProgress');
   const ptCurEl = document.getElementById('ptCur');
@@ -2736,6 +2735,7 @@ body.menu-open{
     const item = el.parentElement;
     const isOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item.open').forEach(function (i) {
+  const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
       i.classList.remove('open');
     });
     if (!isOpen) item.classList.add('open');
@@ -2762,29 +2762,45 @@ body.menu-open{
     if (hasError) return;
 
     const fields = form.querySelectorAll('input, textarea, select');
-    let text = '📬 *Новая заявка с сайта Мируся*\n\n';
+    let text = '📬 *Новая заявка с сайта Мируся*
+
+';
     fields.forEach(function(f) {
       if (f.value && f.value.trim() && f.type !== 'file' && f.type !== 'hidden') {
         const label = f.closest('.fgroup')?.querySelector('label')?.textContent || f.placeholder || '';
-        if (label) text += `*${label}:* ${f.value.trim()}\n`;
+        if (label) text += `*${label}:* ${f.value.trim()}
+`;
       }
     });
-    text += `\n🕐 ${new Date().toLocaleString('ru-RU')}`;
+    text += `
+🕐 ${new Date().toLocaleString('ru-RU')}`;
 
     const btn = form.querySelector('button[type="submit"]');
+    if (!btn) return;
     const origText = btn.textContent;
     btn.textContent = 'Отправляем...';
     btn.disabled = true;
 
     try {
+      const sendData = new FormData();
+      sendData.append('text', text);
+
+      const fileInput = form.querySelector('input[type="file"]');
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        sendData.append('file', fileInput.files[0]);
+      }
+
       const res = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+        body: sendData
       });
       const json = await res.json();
 
       if (json.ok) {
+        form.classList.add('form-submitted');
+        form.querySelectorAll('input, select, textarea').forEach(function(field){
+          if (field.type !== 'hidden') field.disabled = true;
+        });
         form.querySelector('.form-success')?.classList.add('show');
         btn.textContent = 'Заявка отправлена ✓';
         btn.style.background = '#1a6b1a';
@@ -2819,6 +2835,7 @@ body.menu-open{
 })();
 (function(){
   'use strict';
+
   const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
 
   /* ── ЦЕНОВАЯ МАТРИЦА ── */
@@ -3279,7 +3296,7 @@ body.menu-open{
   });
 
   /* ── ОТПРАВКА ── */
-  submitBtn.addEventListener('click', async ()=>{
+  submitBtn.addEventListener('click',()=>{
     const nameEl=$('kfLeadName'), phoneEl=$('kfLeadPhone');
     let ok=true;
     const ne=!nameEl.value.trim();
@@ -3334,11 +3351,19 @@ body.menu-open{
     if (payload.comment) tgText += `\nКомментарий: ${payload.comment}`;
     tgText += `\n\n🕐 ${new Date().toLocaleString('ru-RU')}`;
 
+    const sendData = new FormData();
+    sendData.append('text', tgText);
+
+    const leadFile = $('kfLeadFile');
+    if (leadFile && leadFile.files && leadFile.files[0]) {
+      sendData.append('file', leadFile.files[0]);
+    }
+
     await fetch(WORKER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: tgText })
+      body: sendData
     });
+
     $('kfSubmitSuccess').classList.add('show');
     submitBtn.textContent='Заявка отправлена ✓';
     submitBtn.disabled=true;
