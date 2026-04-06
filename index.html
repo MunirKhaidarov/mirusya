@@ -13,14 +13,18 @@
 <meta content="#13081F" name="theme-color"/>
 <meta content="website" property="og:type"/>
 <meta content="ru_RU" property="og:locale"/>
+<meta content="https://mirusya.ru/" property="og:url"/>
 <meta content="Мируся — брендированная одежда и вышитый мерч на заказ" property="og:title"/>
 <meta content="Одежда с логотипом, корпоративный мерч, шевроны, нашивки и корпоративные подарки в Обнинске и по Калужской области. Работаем от 1 штуки." property="og:description"/>
-<meta content="summary" name="twitter:card"/>
+<meta content="https://mirusya.ru/og-banner.png" property="og:image"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<meta content="Баннер компании Мируся" property="og:image:alt"/>
+<meta content="summary_large_image" name="twitter:card"/>
 <meta content="Мируся — брендированная одежда и вышитый мерч на заказ" name="twitter:title"/>
 <meta content="Одежда с логотипом, корпоративный мерч и подарки для бизнеса в Обнинске и по Калужской области." name="twitter:description"/>
-
-<link href="./favicon.ico" rel="icon" sizes="any" type="image/x-icon"/>
-<link href="./favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<meta content="https://mirusya.ru/og-banner.png" name="twitter:image"/>
+<link href="https://mirusya.ru/" rel="canonical"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;700;900&amp;family=Manrope:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
 <style>
@@ -443,13 +447,53 @@ nav{
 .cat-price{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:500;color:var(--red);letter-spacing:0.1em;text-transform:uppercase;margin-top:auto;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:color .2s,transform .2s}.cat-price:hover{color:var(--white);transform:translateX(2px)}
 
 .catalog-minorder{
-  margin-top:40px;display:inline-flex;align-items:center;gap:16px;
-  border:1px solid var(--border);padding:16px 32px;
+  margin-top:40px;
+  display:inline-flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px 16px;
+  border:1px solid var(--border);
+  padding:16px 32px;
+}
+.catalog-minorder span,
+.catalog-minorder strong,
+.catalog-minorder-link{
+  white-space:nowrap;
 }
 .catalog-minorder span{font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray)}
 .catalog-minorder strong{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;color:var(--white)}
 .catalog-minorder-link{font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);text-decoration:none;font-weight:700;transition:color .2s}
 .catalog-minorder-link:hover{color:var(--white)}
+@media (max-width: 768px){
+  .catalog-minorder{
+    display:flex;
+    width:100%;
+    padding:18px 20px;
+    gap:10px 12px;
+    align-items:flex-start;
+  }
+  .catalog-minorder > span:nth-of-type(3),
+  .catalog-minorder > span:nth-of-type(6){
+    display:none;
+  }
+  .catalog-minorder > *{
+    white-space:normal;
+  }
+  .catalog-minorder-link{
+    width:100%;
+    margin-top:4px;
+  }
+}
+@media (max-width: 480px){
+  .catalog-minorder{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .catalog-minorder strong{
+    font-size:13px;
+  }
+}
 
 /* ─── СРОЧНО ─── */
 .express-section{
@@ -938,117 +982,6 @@ body.menu-open{overflow:hidden}
 .fgroup input[type="file"]::file-selector-button:hover{
   border-color:var(--red);
   background:rgba(199,255,46,0.10);
-}
-
-.file-upload-status{
-  margin-top:8px;
-  font-size:12px;
-  line-height:1.5;
-  color:var(--gray);
-}
-.file-upload-status.ok{color:var(--red)}
-.file-upload-status.err{color:#ff7f96}
-.file-upload-progress{
-  display:none;
-  width:100%;
-  height:6px;
-  margin-top:8px;
-  background:rgba(255,255,255,0.10);
-  border-radius:999px;
-  overflow:hidden;
-}
-.file-upload-progress.show{display:block}
-.file-upload-progress span{
-  display:block;
-  width:0%;
-  height:100%;
-  background:var(--red);
-  transition:width .2s ease;
-}
-
-.file-upload-ui{
-  margin-top:10px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  min-width:0;
-}
-.file-upload-meta{
-  display:none;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-  max-width:100%;
-}
-.file-upload-meta.show{display:flex}
-.file-upload-hint{
-  font-size:12px;
-  line-height:1.5;
-  color:var(--gray);
-}
-.file-upload-ring{
-  --progress:0;
-  width:24px;
-  height:24px;
-  flex:0 0 24px;
-  border-radius:50%;
-  background:conic-gradient(var(--red) calc(var(--progress) * 1%), rgba(255,255,255,0.12) 0);
-  position:relative;
-}
-.file-upload-ring::after{
-  content:'';
-  position:absolute;
-  inset:3px;
-  border-radius:50%;
-  background:var(--bg2);
-}
-.file-upload-ring.is-complete{background:conic-gradient(var(--red) 100%, var(--red) 100%)}
-.file-upload-ring.is-error{background:conic-gradient(#ff7f96 100%, #ff7f96 100%)}
-.file-upload-name{
-  flex:1 1 auto;
-  min-width:0;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  font-size:12px;
-  line-height:1.4;
-  color:var(--white);
-}
-.file-upload-percent{
-  font-size:11px;
-  line-height:1;
-  color:var(--gray);
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-  white-space:nowrap;
-}
-.file-upload-clear{
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,0.16);
-  background:transparent;
-  color:var(--white);
-  font-size:15px;
-  line-height:1;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  transition:border-color .2s, background .2s, color .2s, opacity .2s;
-}
-.file-upload-clear:hover{
-  border-color:var(--red);
-  background:rgba(199,255,46,0.10);
-  color:var(--red);
-}
-.file-upload-clear:disabled{
-  opacity:.35;
-  cursor:default;
-}
-.kf-file-row .file-upload-ui{
-  margin-top:0;
-  flex:1 1 260px;
 }
 
 .form-consent{
@@ -1668,12 +1601,6 @@ body.menu-open{
 .kf-file-trigger{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.14);padding:9px 16px;font-family:'Manrope',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap}
 .kf-file-trigger:hover{border-color:var(--red);background:rgba(199,255,46,.09)}
 .kf-file-name{font-size:11px;color:var(--gray);line-height:1.5}
-.kf-upload-status{margin-top:10px;font-size:11px;line-height:1.5;color:var(--gray)}
-.kf-upload-status.ok{color:var(--red)}
-.kf-upload-status.err{color:#ff7f96}
-.kf-upload-progress{display:none;width:100%;height:6px;margin-top:8px;background:rgba(255,255,255,.10);border-radius:999px;overflow:hidden}
-.kf-upload-progress.show{display:block}
-.kf-upload-progress span{display:block;width:0%;height:100%;background:var(--red);transition:width .2s ease}
 
 /* Навигация */
 .kf-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid var(--border)}
@@ -2421,13 +2348,8 @@ body.menu-open{
 <div class="kf-file-row" style="margin-top:16px">
 <input accept=".jpg,.jpeg,.png,.webp,.svg,.pdf,.ai,.eps,.cdr" class="kf-file-input" id="kfLeadFile" type="file"/>
 <button class="kf-file-trigger" onclick="document.getElementById('kfLeadFile').click()" type="button">Прикрепить логотип</button>
-<div class="file-upload-ui">
-<div class="file-upload-meta" id="kfFileMeta"><span class="file-upload-ring" id="kfFileRing"></span><span class="file-upload-name" id="kfFileName"></span><span class="file-upload-percent" id="kfFilePercent">0%</span><button aria-label="Удалить файл" class="file-upload-clear" id="kfFileClear" type="button">×</button></div>
-<div class="file-upload-hint" id="kfFileHint">JPG, PNG, SVG, PDF, AI — можно прислать позже</div>
+<span class="kf-file-name" id="kfFileName">JPG, PNG, SVG, PDF, AI — можно прислать позже</span>
 </div>
-</div>
-<div class="kf-upload-status" id="kfUploadStatus"></div>
-<div class="kf-upload-progress" id="kfUploadProgress"><span></span></div>
 <p style="font-size:11px;color:var(--gray);margin-top:14px;line-height:1.6">Нажимая «Отправить», вы соглашаетесь с <a href="privacy.html" style="color:var(--white);text-decoration:underline">обработкой персональных данных</a>.</p>
 <div class="kf-submit-success" id="kfSubmitSuccess">
           Заявка отправлена! Мы получили ваш расчёт и свяжемся с вами в течение рабочего дня. Держите телефон под рукой.
@@ -2660,7 +2582,7 @@ body.menu-open{
 </select>
 </div>
 <div class="fgroup"><label>Комментарий</label><textarea placeholder="Опишите задачу, пожелания по логотипу, цветам, изделию и срокам"></textarea></div>
-<div class="fgroup"><label>Логотип, файл или референс</label><input accept=".jpg,.jpeg,.png,.webp,.svg,.pdf,.ai,.eps,.cdr" name="attachment" type="file"/><div class="file-upload-ui" data-file-ui><div class="file-upload-meta" data-file-meta><span class="file-upload-ring" data-file-ring></span><span class="file-upload-name" data-file-name></span><span class="file-upload-percent" data-file-percent>0%</span><button aria-label="Удалить файл" class="file-upload-clear" data-file-clear type="button">×</button></div><div class="file-upload-hint" data-file-hint>JPG, PNG, SVG, PDF, AI — можно прислать позже</div></div><div class="file-upload-status" data-file-status></div><div class="file-upload-progress" data-file-progress><span></span></div></div>
+<div class="fgroup"><label>Логотип, файл или референс</label><input accept=".jpg,.jpeg,.png,.webp,.svg,.pdf,.ai,.eps,.cdr" name="attachment" type="file"/></div>
 <button class="btn-red" type="submit">Отправить заявку и получить предложение</button>
 <p class="form-consent">Нажимая кнопку, вы соглашаетесь с <a href="privacy.html">обработкой персональных данных</a>.</p>
 <div class="form-success"><div class="form-success-title">Заявка отправлена</div><div class="form-success-text">Спасибо. Мы получили ваши контакты и описание задачи. Вернёмся с расчётом и предложением по проекту.</div></div>
@@ -2703,105 +2625,6 @@ body.menu-open{
 <script>
 (function () {
   const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
-
-  function formatUploadSize(bytes) {
-    return (bytes / 1024 / 1024).toFixed(2) + ' МБ';
-  }
-
-  function updateUploadRing(ring, percentEl, percent, state) {
-    const safe = Math.max(0, Math.min(100, Number(percent) || 0));
-    if (ring) {
-      ring.style.setProperty('--progress', String(safe));
-      ring.classList.toggle('is-complete', state === 'complete');
-      ring.classList.toggle('is-error', state === 'error');
-    }
-    if (!percentEl) return;
-    if (state === 'complete') {
-      percentEl.textContent = '✓';
-    } else if (state === 'error') {
-      percentEl.textContent = '!';
-    } else {
-      percentEl.textContent = safe + '%';
-    }
-  }
-
-  function renderLeadFileUi(input, state, percent) {
-    if (!input) return;
-    const wrap = input.closest('.fgroup');
-    if (!wrap) return;
-    const file = input.files && input.files[0] ? input.files[0] : null;
-    const meta = wrap.querySelector('[data-file-meta]');
-    const hint = wrap.querySelector('[data-file-hint]');
-    const name = wrap.querySelector('[data-file-name]');
-    const ring = wrap.querySelector('[data-file-ring]');
-    const percentEl = wrap.querySelector('[data-file-percent]');
-    const clear = wrap.querySelector('[data-file-clear]');
-    const status = wrap.querySelector('[data-file-status]');
-    const progress = wrap.querySelector('[data-file-progress]');
-    const bar = progress ? progress.querySelector('span') : null;
-
-    if (!file) {
-      if (meta) meta.classList.remove('show');
-      if (hint) hint.style.display = '';
-      if (name) name.textContent = '';
-      if (clear) clear.disabled = true;
-      updateUploadRing(ring, percentEl, 0, 'idle');
-      if (status) {
-        status.textContent = '';
-        status.className = 'file-upload-status';
-      }
-      if (progress) progress.classList.remove('show');
-      if (bar) bar.style.width = '0%';
-      return;
-    }
-
-    if (meta) meta.classList.add('show');
-    if (hint) hint.style.display = 'none';
-    if (name) name.textContent = file.name + ' (' + formatUploadSize(file.size) + ')';
-    if (clear) clear.disabled = !!input.disabled;
-
-    if (state === 'uploading') {
-      updateUploadRing(ring, percentEl, percent, 'uploading');
-      if (status) {
-        status.textContent = 'Загрузка файла: ' + percent + '%';
-        status.className = 'file-upload-status';
-      }
-      if (progress) progress.classList.add('show');
-      if (bar) bar.style.width = percent + '%';
-      return;
-    }
-
-    if (state === 'complete') {
-      updateUploadRing(ring, percentEl, 100, 'complete');
-      if (status) {
-        status.textContent = 'Файл загружен: ' + file.name;
-        status.className = 'file-upload-status ok';
-      }
-      if (progress) progress.classList.add('show');
-      if (bar) bar.style.width = '100%';
-      return;
-    }
-
-    if (state === 'error') {
-      updateUploadRing(ring, percentEl, percent || 0, 'error');
-      if (status) {
-        status.textContent = 'Файл не отправился. Попробуйте ещё раз.';
-        status.className = 'file-upload-status err';
-      }
-      if (progress) progress.classList.remove('show');
-      if (bar) bar.style.width = '0%';
-      return;
-    }
-
-    updateUploadRing(ring, percentEl, 0, 'selected');
-    if (status) {
-      status.textContent = 'Файл выбран и готов к отправке';
-      status.className = 'file-upload-status ok';
-    }
-    if (progress) progress.classList.remove('show');
-    if (bar) bar.style.width = '0%';
-  }
-
   const ptTrack = document.getElementById('ptTrack');
   const ptProgress = document.getElementById('ptProgress');
   const ptCurEl = document.getElementById('ptCur');
@@ -2965,110 +2788,62 @@ body.menu-open{
     if (!isOpen) item.classList.add('open');
   };
 
-  window.handleForm = async function (e) {
+  window.handleForm = async function(e) {
     e.preventDefault();
     const form = e.target;
-    const btn = form.querySelector('button[type="submit"]');
-    if (!btn) return;
 
-    const nameInput = form.querySelector('input[placeholder="Как вас зовут?"]');
+    const nameInput  = form.querySelector('input[placeholder="Как вас зовут?"]');
     const phoneInput = form.querySelector('input[placeholder="+7 (___) ___-__-__"]');
-    const fileInput = form.querySelector('input[type="file"]');
-    const file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-
     let hasError = false;
-    [nameInput, phoneInput].forEach(function(field){
+
+    [nameInput, phoneInput].forEach(function(field) {
       if (!field) return;
-      const wrap = field.closest('.fgroup');
+      const wrap  = field.closest('.fgroup');
       const error = wrap ? wrap.querySelector('.form-field-error') : null;
       const empty = !field.value || !field.value.trim();
       field.classList.toggle('input-error', empty);
       if (error) error.classList.toggle('show', empty);
       if (empty) hasError = true;
     });
+
     if (hasError) return;
 
     const fields = form.querySelectorAll('input, textarea, select');
     let text = '📬 *Новая заявка с сайта Мируся*\n\n';
     fields.forEach(function(f) {
-      if (f.type === 'file' || f.type === 'hidden') return;
-      if (!f.value || !f.value.trim()) return;
-      const label = f.closest('.fgroup')?.querySelector('label')?.textContent || f.placeholder || '';
-      if (label) text += `*${label}:* ${f.value.trim()}\n`;
+      if (f.value && f.value.trim() && f.type !== 'file' && f.type !== 'hidden') {
+        const label = f.closest('.fgroup')?.querySelector('label')?.textContent || f.placeholder || '';
+        if (label) text += `*${label}:* ${f.value.trim()}\n`;
+      }
     });
-    if (file) text += `*Файл:* ${file.name} (${formatUploadSize(file.size)})\n`;
     text += `\n🕐 ${new Date().toLocaleString('ru-RU')}`;
 
+    const btn = form.querySelector('button[type="submit"]');
     const origText = btn.textContent;
-    btn.textContent = file ? 'Загружаем файл...' : 'Отправляем...';
+    btn.textContent = 'Отправляем...';
     btn.disabled = true;
 
-    if (fileInput && file) {
-      renderLeadFileUi(fileInput, 'selected', 0);
-    }
-
     try {
-      const formData = new FormData();
-      formData.append('text', text);
-      if (file) formData.append('file', file, file.name);
-
-      const json = await new Promise(function(resolve, reject) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', WORKER_URL, true);
-
-        xhr.upload.onprogress = function(evt) {
-          if (!file || !evt.lengthComputable) return;
-          const percent = Math.round((evt.loaded / evt.total) * 100);
-          if (fileInput) renderLeadFileUi(fileInput, 'uploading', percent);
-          btn.textContent = percent < 100 ? `Загружаем файл... ${percent}%` : 'Отправляем...';
-        };
-
-        xhr.onload = function() {
-          try {
-            resolve(JSON.parse(xhr.responseText || '{}'));
-          } catch (err) {
-            resolve({ ok: xhr.status >= 200 && xhr.status < 300 });
-          }
-        };
-        xhr.onerror = function() { reject(new Error('network error')); };
-        xhr.send(formData);
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
       });
+      const json = await res.json();
 
-      if (!json.ok) throw new Error(json.error || 'send failed');
-
-      btn.textContent = 'Заявка отправлена ✓';
-      btn.style.background = '#1a6b1a';
-      form.classList.add('form-submitted');
-      form.querySelectorAll('input, select, textarea').forEach(function(field){
-        if (field.type !== 'hidden') field.disabled = true;
-      });
-      const success = form.querySelector('.form-success');
-      if (success) success.classList.add('show');
-      if (fileInput && file) renderLeadFileUi(fileInput, 'complete', 100);
-    } catch (err) {
+      if (json.ok) {
+        form.querySelector('.form-success')?.classList.add('show');
+        btn.textContent = 'Заявка отправлена ✓';
+        btn.style.background = '#1a6b1a';
+      } else {
+        throw new Error('error');
+      }
+    } catch(err) {
       btn.textContent = origText;
       btn.disabled = false;
-      if (fileInput && file) renderLeadFileUi(fileInput, 'error', 0);
       alert('Ошибка отправки, попробуйте позже или позвоните нам.');
     }
   };
-
-  document.querySelectorAll('.form-fields input[type="file"]').forEach(function(input) {
-    if (input.id === 'kfLeadFile') return;
-    renderLeadFileUi(input);
-    input.addEventListener('change', function() {
-      renderLeadFileUi(input, 'selected', 0);
-    });
-    const wrap = input.closest('.fgroup');
-    const clear = wrap ? wrap.querySelector('[data-file-clear]') : null;
-    if (clear) {
-      clear.addEventListener('click', function() {
-        if (input.disabled) return;
-        input.value = '';
-        renderLeadFileUi(input);
-      });
-    }
-  });
 
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-links a');
@@ -3509,100 +3284,10 @@ body.menu-open{
 
   // Файл
   const fileInput = $('kfLeadFile');
-  const fileHint = $('kfFileHint');
-  const fileMeta = $('kfFileMeta');
-  const fileName = $('kfFileName');
-  const fileRing = $('kfFileRing');
-  const filePercent = $('kfFilePercent');
-  const fileClear = $('kfFileClear');
-  const uploadStatus = $('kfUploadStatus');
-  const uploadProgress = $('kfUploadProgress');
-  const uploadProgressBar = uploadProgress ? uploadProgress.querySelector('span') : null;
-
-  function formatCalcFileSize(bytes) {
-    return (bytes / 1024 / 1024).toFixed(2) + ' МБ';
-  }
-
-  function updateCalcFileRing(percent, state) {
-    const safe = Math.max(0, Math.min(100, Number(percent) || 0));
-    if (fileRing) {
-      fileRing.style.setProperty('--progress', String(safe));
-      fileRing.classList.toggle('is-complete', state === 'complete');
-      fileRing.classList.toggle('is-error', state === 'error');
-    }
-    if (!filePercent) return;
-    if (state === 'complete') {
-      filePercent.textContent = '✓';
-    } else if (state === 'error') {
-      filePercent.textContent = '!';
-    } else {
-      filePercent.textContent = safe + '%';
-    }
-  }
-
-  function renderCalcFileUi(state, percent) {
-    const f = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-    if (!f) {
-      if (fileMeta) fileMeta.classList.remove('show');
-      if (fileHint) fileHint.style.display = '';
-      if (fileName) fileName.textContent = '';
-      if (fileClear) fileClear.disabled = true;
-      updateCalcFileRing(0, 'idle');
-      if (uploadStatus) { uploadStatus.textContent = ''; uploadStatus.className = 'kf-upload-status'; }
-      if (uploadProgress) uploadProgress.classList.remove('show');
-      if (uploadProgressBar) uploadProgressBar.style.width = '0%';
-      return;
-    }
-
-    if (fileMeta) fileMeta.classList.add('show');
-    if (fileHint) fileHint.style.display = 'none';
-    if (fileName) fileName.textContent = f.name + ' (' + formatCalcFileSize(f.size) + ')';
-    if (fileClear) fileClear.disabled = false;
-
-    if (state === 'uploading') {
-      updateCalcFileRing(percent, 'uploading');
-      if (uploadStatus) { uploadStatus.textContent = 'Загрузка файла: ' + percent + '%'; uploadStatus.className = 'kf-upload-status'; }
-      if (uploadProgress) uploadProgress.classList.add('show');
-      if (uploadProgressBar) uploadProgressBar.style.width = percent + '%';
-      return;
-    }
-
-    if (state === 'complete') {
-      updateCalcFileRing(100, 'complete');
-      if (uploadStatus) { uploadStatus.textContent = 'Файл загружен: ' + f.name; uploadStatus.className = 'kf-upload-status ok'; }
-      if (uploadProgress) uploadProgress.classList.add('show');
-      if (uploadProgressBar) uploadProgressBar.style.width = '100%';
-      return;
-    }
-
-    if (state === 'error') {
-      updateCalcFileRing(percent || 0, 'error');
-      if (uploadStatus) { uploadStatus.textContent = 'Файл не отправился. Попробуйте ещё раз.'; uploadStatus.className = 'kf-upload-status err'; }
-      if (uploadProgress) uploadProgress.classList.remove('show');
-      if (uploadProgressBar) uploadProgressBar.style.width = '0%';
-      return;
-    }
-
-    updateCalcFileRing(0, 'selected');
-    if (uploadStatus) { uploadStatus.textContent = 'Файл выбран и готов к отправке'; uploadStatus.className = 'kf-upload-status ok'; }
-    if (uploadProgress) uploadProgress.classList.remove('show');
-    if (uploadProgressBar) uploadProgressBar.style.width = '0%';
-  }
-
-  if(fileInput) {
-    renderCalcFileUi();
-    fileInput.addEventListener('change', function(){
-      renderCalcFileUi('selected', 0);
-    });
-  }
-
-  if(fileClear) {
-    fileClear.addEventListener('click', function(){
-      if (!fileInput || fileInput.disabled) return;
-      fileInput.value = '';
-      renderCalcFileUi();
-    });
-  }
+  if(fileInput) fileInput.addEventListener('change',e=>{
+    const f=e.target.files[0];
+    $('kfFileName').textContent=f?f.name:'JPG, PNG, SVG, PDF, AI — можно прислать позже';
+  });
 
   /* ── ФАЙЛ ВЫШИВКИ ── */
   const digYes  = $('kfDigYes');
@@ -3671,18 +3356,15 @@ body.menu-open{
       }
       return;
     }
-
     const payload={
       org:  $('kfLeadOrg').value,
-      name: nameEl.value,
-      phone: phoneEl.value,
+      name: nameEl.value, phone: phoneEl.value,
       email:$('kfLeadEmail').value,
       comment:$('kfLeadComment').value,
       items: cart.map(i=>({name:i.name,meta:i.meta,qty:i.qty,unit:i.unit,sub:i.sub,fileInfo:i.fileInfo||''})),
       grandTotal: grand,
       deadline: st.deadline,
     };
-
     let tgText = '🛒 *Заказ из конфигуратора Мируся*\n\n';
     tgText += '*Позиции:*\n';
     payload.items.forEach(function(i) {
@@ -3697,57 +3379,16 @@ body.menu-open{
     tgText += `\nТелефон: ${payload.phone}`;
     if (payload.email)   tgText += `\nEmail: ${payload.email}`;
     if (payload.comment) tgText += `\nКомментарий: ${payload.comment}`;
-    const calcFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-    if (calcFile) {
-      const sizeMb = (calcFile.size / 1024 / 1024).toFixed(2);
-      tgText += `\nФайл: ${calcFile.name} (${sizeMb} МБ)`;
-    }
     tgText += `\n\n🕐 ${new Date().toLocaleString('ru-RU')}`;
 
-    const origText = submitBtn.textContent;
-    submitBtn.textContent = calcFile ? 'Загружаем файл...' : 'Отправляем...';
-    submitBtn.disabled = true;
-    if (calcFile) renderCalcFileUi('selected', 0);
-
-    try {
-      const formData = new FormData();
-      formData.append('text', tgText);
-      if (calcFile) formData.append('file', calcFile, calcFile.name);
-
-      const json = await new Promise(function(resolve, reject) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', WORKER_URL, true);
-
-        xhr.upload.onprogress = function(evt) {
-          if (!calcFile || !evt.lengthComputable) return;
-          const percent = Math.round((evt.loaded / evt.total) * 100);
-          renderCalcFileUi('uploading', percent);
-          submitBtn.textContent = percent < 100 ? 'Загружаем файл... ' + percent + '%' : 'Отправляем...';
-        };
-
-        xhr.onload = function() {
-          try {
-            resolve(JSON.parse(xhr.responseText || '{}'));
-          } catch (err) {
-            resolve({ ok: xhr.status >= 200 && xhr.status < 300 });
-          }
-        };
-        xhr.onerror = function() { reject(new Error('network error')); };
-        xhr.send(formData);
-      });
-
-      if (!json.ok) throw new Error(json.error || 'send failed');
-
-      $('kfSubmitSuccess').classList.add('show');
-      submitBtn.textContent='Заявка отправлена ✓';
-      submitBtn.disabled=true;
-      if(calcFile) renderCalcFileUi('complete', 100);
-    } catch(err) {
-      submitBtn.textContent = origText;
-      submitBtn.disabled = false;
-      if(calcFile) renderCalcFileUi('error', 0);
-      alert('Ошибка отправки, попробуйте позже или позвоните нам.');
-    }
+    await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: tgText })
+    });
+    $('kfSubmitSuccess').classList.add('show');
+    submitBtn.textContent='Заявка отправлена ✓';
+    submitBtn.disabled=true;
   });
 
   /* ── QTY UI ── */
