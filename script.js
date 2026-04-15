@@ -243,37 +243,59 @@
   'use strict';
   const WORKER_URL = 'https://mirusya-tg.ip-khaidarov.workers.dev';
 
-  /* ── ЦЕНОВАЯ МАТРИЦА ── */
-  const PM = [
-    {min:1,  max:9,  xs:250, s:390, m:650, l:1050,xl:1650},
-    {min:10, max:29, xs:190, s:290, m:490, l:790, xl:1250},
-    {min:30, max:99, xs:150, s:230, m:390, l:640, xl:1000},
-    {min:100,max:299,xs:120, s:185, m:320, l:520, xl:820 },
-    {min:300,max:9999,xs:95, s:150, m:260, l:420, xl:660 },
-  ];
-  const PP = [
-    {min:1,  max:9,  p:290},{min:10,max:29, p:220},
-    {min:30, max:99, p:175},{min:100,max:299,p:140},
-    {min:300,max:9999,p:110},
-  ];
+  const DENSITY = {
+    embroidery: 150,
+    patches: 170
+  };
 
-  /* ── КОРЗИНА ── */
+  const RATE = {
+    embroidery: [
+      { min: 1, max: 10, rate: 45 },
+      { min: 11, max: 30, rate: 40 },
+      { min: 31, max: 50, rate: 35 },
+      { min: 51, max: 100, rate: 32 },
+      { min: 101, max: 500, rate: 28 },
+      { min: 501, max: 99999, rate: 23 }
+    ],
+    patches: [
+      { min: 1, max: 10, rate: 42 },
+      { min: 11, max: 30, rate: 38 },
+      { min: 31, max: 50, rate: 33 },
+      { min: 51, max: 100, rate: 30 },
+      { min: 101, max: 500, rate: 26 },
+      { min: 501, max: 99999, rate: 22 }
+    ]
+  };
+
+  const SMALL_MIN = {
+    embroidery: { under100: 220, over100: 170 },
+    patches: { under100: 240, over100: 180 }
+  };
+
+  const MIN_ORDER = 2500;
+
   let cart = [];
   let nextId = 1;
 
-  /* ── СОСТОЯНИЕ ── */
-  const st = {
-    step:1, maxStep:6, editId:null,
-    type:'embroidery', garment:'polo', garSurcharge:0,
-    ownGarment:false, sizeKey:'xs',
-    opt3d:false, optMetal:false,
-    qty:1, deadline:'standard', deadSurcharge:0,
-    patchType:'patch_std',
-    hasFile:false, // false = нет файла, мы делаем; true = файл есть, запросим
-  };
+  function createDefaultState() {
+    return {
+      step: 1,
+      maxStep: 5,
+      editId: null,
+      type: 'embroidery',
+      qty: 1,
+      deadline: 'standard',
+      deadSurcharge: 0,
+      patchType: 'patch_std',
+      opt3d: false,
+      optMetal: false
+    };
+  }
 
-  /* ── DOM ── */
+  const st = createDefaultState();
+
   const $ = id => document.getElementById(id);
+  const shell      = $('kfShell');
   const stepLabel  = $('kfStepLabel');
   const progBar    = $('kfProgressBar');
   const stepTitle  = $('kfStepTitle');
@@ -289,503 +311,597 @@
   const qtySlider  = $('kfQtySlider');
   const qtyVal     = $('kfQtyVal');
   const qtyDisc    = $('kfQtyDiscount');
-  const customSize = $('kfCustomSize');
   const kfW        = $('kfW');
   const kfH        = $('kfH');
-  const multiBlock = $('kfMultiBlock');
-  const addNewBtn  = $('kfAddAndNewBtn');
-  const saveBtn    = $('kfSaveItemBtn');
+  const kfPatchW   = $('kfPatchW');
+  const kfPatchH   = $('kfPatchH');
   const cartItems  = $('kfCartItems');
   const cartEmpty  = $('kfCartEmpty');
   const cartTotal  = $('kfCartTotal');
   const cartTotalV = $('kfCartTotalVal');
   const editBadge  = $('kfEditBadge');
 
-  /* ── ТЕКСТЫ ШАГОВ ── */
   const STEPS = {
-    embroidery:{
-      1:{t:'Что нужно вышить?',d:'Выберите тип продукта.'},
-      2:{t:'На что наносим?',d:'Тип изделия влияет на стоимость.'},
-      3:{t:'Размер вышивки',d:'Выберите стандартный или введите свой размер.'},
-      4:{t:'Количество',d:'Цена за штуку снижается с ростом тиража.'},
-      5:{t:'Сроки',d:'Выберите удобный срок производства.'},
-      6:{t:'Ваши контакты',d:'Пришлём точный расчёт и согласуем детали.'},
+    embroidery: {
+      1: { t: 'Что рассчитываем?', d: 'Выберите направление — калькулятор подстроится под вашу задачу.' },
+      2: { t: 'Размер и опции', d: 'Укажите размер вышивки и дополнительные нюансы.' },
+      3: { t: 'Количество', d: 'Чем больше тираж, тем ниже ориентировочная стоимость за штуку.' },
+      4: { t: 'Сроки', d: 'Выберите стандартный или приоритетный запуск.' },
+      5: { t: 'Ваши контакты', d: 'Пришлём расчёт и согласуем детали заказа.' }
     },
-    patches:{
-      1:{t:'Что нужно вышить?',d:'Выберите тип продукта.'},
-      '2b':{t:'Тип шеврона',d:'Конструкция и крепление.'},
-      3:{t:'Размер шеврона',d:'Стандартный или свой размер.'},
-      4:{t:'Количество',d:'Тираж влияет на цену за штуку.'},
-      5:{t:'Сроки',d:'Выберите удобный срок производства.'},
-      6:{t:'Ваши контакты',d:'Пришлём точный расчёт и согласуем детали.'},
-    },
+    patches: {
+      1: { t: 'Что рассчитываем?', d: 'Выберите направление — калькулятор подстроится под вашу задачу.' },
+      '2b': { t: 'Размер и конструкция', d: 'Укажите размер шеврона и вариант исполнения.' },
+      3: { t: 'Количество', d: 'Чем больше тираж, тем ниже ориентировочная стоимость за штуку.' },
+      4: { t: 'Сроки', d: 'Выберите стандартный или приоритетный запуск.' },
+      5: { t: 'Ваши контакты', d: 'Пришлём расчёт и согласуем детали заказа.' }
+    }
   };
 
-  /* ── ВСПОМОГАТЕЛЬНЫЕ ── */
-  function stepKey(){
-    return (st.type==='patches' && st.step===2) ? '2b' : st.step;
-  }
-  function tier(qty, matrix){
-    return matrix.find(t=>qty>=t.min&&qty<=t.max) || matrix[matrix.length-1];
-  }
-  function sizeKey(){
-    const a=(parseFloat(kfW.value)||0)*(parseFloat(kfH.value)||0);
-    if(a<=0)   return 'xs'; // ничего не введено — минимальная ставка
-    if(a<=25)  return 'xs';
-    if(a<=64)  return 's';
-    if(a<=120) return 'm';
-    if(a<=224) return 'l';
-    return 'xl';
-  }
+  const PATCH_NAMES = {
+    patch_std: 'Шеврон / нашивка',
+    patch_velcro: 'Шеврон с велкро',
+    patch_thermo: 'Шеврон с термоклеем',
+    patch_3d: '3D-шеврон'
+  };
 
-  /* ── РЕНДЕР ШАГА ── */
-  function renderStep(){
-    const total = st.maxStep;
-    stepLabel.textContent = 'Шаг '+st.step+' из '+total;
-    progBar.style.width = (st.step/total*100)+'%';
-    const k = stepKey();
-    const txt = (STEPS[st.type]||STEPS.embroidery)[k]||{};
-    stepTitle.textContent = txt.t||'';
-    stepDesc.textContent  = txt.d||'';
+  const PATCH_SUMMARY = {
+    patch_std: 'Ткань + вышивка',
+    patch_velcro: 'Велкро (+30 ₽/шт)',
+    patch_thermo: 'Термоклей',
+    patch_3d: '3D-патч (+15%)'
+  };
 
-    document.querySelectorAll('.kf-stage').forEach(s=>s.classList.remove('active'));
-    const target = (st.type==='patches'&&st.step===2)
-      ? document.querySelector('.kf-stage[data-step="2b"]')
-      : document.querySelector('.kf-stage[data-step="'+st.step+'"]');
-    if(target) target.classList.add('active');
+  const TIERS = [
+    { min: 1, max: 10, note: 'Малый тираж — базовая ставка' },
+    { min: 11, max: 30, note: 'Стартовый опт — цена за штуку ниже' },
+    { min: 31, max: 50, note: 'Оптовая ставка — хороший баланс цены и объёма' },
+    { min: 51, max: 100, note: 'Хороший тираж — стоимость за штуку снижается заметнее' },
+    { min: 101, max: 500, note: 'Крупный тираж — выгоднее по цене за единицу' },
+    { min: 501, max: 99999, note: 'Максимально выгодная ставка по тиражу' }
+  ];
 
-    prevBtn.disabled = st.step===1;
-    nextBtn.style.display  = st.step<total ? '' : 'none';
-    submitBtn.style.display = st.step===total ? '' : 'none';
-
-    // Мультизаказ-блок: показывать на шаге 4
-    if(multiBlock) multiBlock.classList.toggle('show', st.step===4);
-
-    // Скрыть «Стоимость позиции» на шаге 5+ при мультизаказе
-    const priceBox = $('kfPriceBox');
-    const hidePrice = st.step >= 5 && cart.length > 0;
-    if(priceBox) priceBox.style.display = hidePrice ? 'none' : '';
-    if(summaryEl) summaryEl.style.display = hidePrice ? 'none' : '';
-
-    calcPrice();
+  function stepKey() {
+    return st.type === 'patches' && st.step === 2 ? '2b' : st.step;
   }
 
-  /* ── РАСЧЁТ ── */
-  function calcPrice(){
+  function getActiveSizeEls() {
+    return st.type === 'patches' ? [kfPatchW, kfPatchH] : [kfW, kfH];
+  }
+
+  function getCurrentSize() {
+    const [wEl, hEl] = getActiveSizeEls();
+    return {
+      w: parseFloat(wEl && wEl.value) || 0,
+      h: parseFloat(hEl && hEl.value) || 0
+    };
+  }
+
+  function roundUp500(n) {
+    return Math.ceil(n / 500) * 500;
+  }
+
+  function round10(n) {
+    return Math.round(n / 10) * 10;
+  }
+
+  function estimateStitches(type, w, h) {
+    if (w <= 0 || h <= 0) return 0;
+    return roundUp500(w * h * DENSITY[type]);
+  }
+
+  function getRate(type, qty) {
+    const row = RATE[type].find(t => qty >= t.min && qty <= t.max);
+    return row ? row.rate : RATE[type][RATE[type].length - 1].rate;
+  }
+
+  function getCurrentOptionsLabel() {
+    const labels = [];
+    if (st.type === 'embroidery') {
+      if (st.opt3d) labels.push('3D-объём');
+      if (st.optMetal) labels.push('металлизированная нить');
+    } else {
+      labels.push(PATCH_SUMMARY[st.patchType] || 'Шеврон / нашивка');
+    }
+    if (st.deadline === 'urgent') labels.push('срочный запуск');
+    return labels.join(' · ');
+  }
+
+  function calcPrice() {
     const qty = st.qty;
+    const size = getCurrentSize();
+    const stitches = estimateStitches(st.type, size.w, size.h);
     let unit = 0;
 
-    if(st.type==='patches'){
-      unit = tier(qty,PP).p;
-      if(st.patchType==='patch_velcro') unit+=30;
-      if(st.patchType==='patch_3d') unit=Math.round(unit*1.15);
-    } else {
-      const sk = sizeKey();
-      const t  = tier(qty,PM);
-      unit = t[sk]||t.s;
-      let s=1;
-      s += st.garSurcharge/100;
-      if(st.opt3d)    s+=0.15;
-      if(st.optMetal) s+=0.30;
-      if(st.deadSurcharge) s+=st.deadSurcharge/100;
-      if(st.ownGarment) s-=0.10;
-      unit = Math.round(unit*s);
+    if (stitches > 0) {
+      const rate = getRate(st.type, qty);
+      unit = (stitches / 1000) * rate;
+
+      if (stitches <= 3500) {
+        const smallMin = qty < 100 ? SMALL_MIN[st.type].under100 : SMALL_MIN[st.type].over100;
+        unit = Math.max(unit, smallMin);
+      }
+
+      if (st.type === 'embroidery') {
+        if (st.opt3d) unit *= 1.20;
+        if (st.optMetal) unit *= 1.25;
+      } else {
+        if (st.patchType === 'patch_velcro') unit += 30;
+        if (st.patchType === 'patch_3d') unit *= 1.15;
+      }
+
+      if (st.deadSurcharge) unit *= 1 + (st.deadSurcharge / 100);
+      unit = round10(unit);
     }
 
-    const sub   = unit*qty;
+    const sub = unit * qty;
     const total = sub;
 
-    if(st.step>=3){
+    if (st.step >= 2 && stitches > 0) {
       totalEl.textContent = total.toLocaleString('ru-RU');
-      perUnitEl.innerHTML = '<strong>'+unit.toLocaleString('ru-RU')+' ₽</strong> за шт × '+qty+' шт';
-      priceNote.textContent = '';
+      perUnitEl.innerHTML = '<strong>' + unit.toLocaleString('ru-RU') + ' ₽</strong> за шт × ' + qty + ' шт';
+      priceNote.textContent = 'Предварительный расчёт по размеру, тиражу и выбранным опциям.';
     } else {
       totalEl.textContent = '—';
       perUnitEl.textContent = '';
-      priceNote.textContent = 'Выберите параметры — цена появится здесь';
+      priceNote.textContent = 'Укажите размер — калькулятор покажет ориентировочную стоимость';
     }
 
-    renderSummary(unit, sub, total, qty);
-    return {unit, sub, total, qty};
+    renderSummary({ unit, sub, total, qty, stitches, size });
+    return { unit, sub, total, qty, stitches, size };
   }
 
-  /* ── СВОДКА ── */
-  const GN = {polo:'Поло / футболка',hoodie:'Худи / толстовка',jacket:'Куртка / жилет',
-               cap:'Кепка / шапка',bag:'Сумка / рюкзак',other:'Иное изделие'};
-  const SL = {xs:'XS до 5×5 см',s:'S до 8×8 см',m:'M до 12×10 см',
-               l:'L до 16×14 см',xl:'XL до 22×18 см',custom:'Свой размер'};
-  const PN = {patch_std:'Ткань + вышивка',patch_velcro:'С велкро (+30 ₽)',
-               patch_thermo:'Термоклей',patch_3d:'3D-объём (+15%)'};
+  function renderSummary(data) {
+    if (!summaryEl) return;
 
-  function renderSummary(unit, sub, total, qty){
-    const rows=[];
-    if(st.type==='patches'){
-      rows.push(['Тип','Шевроны / нашивки']);
-      rows.push(['Конструкция',PN[st.patchType]||'']);
+    const rows = [];
+    rows.push(['Тип', st.type === 'patches' ? 'Шевроны / нашивки' : 'Вышивка на одежде']);
+
+    if (data.size.w > 0 && data.size.h > 0) {
+      rows.push(['Размер', data.size.w + '×' + data.size.h + ' см']);
+    }
+
+    if (st.type === 'patches') {
+      rows.push(['Конструкция', PATCH_SUMMARY[st.patchType] || 'Ткань + вышивка']);
     } else {
-      rows.push(['Тип','Вышивка на одежде']);
-      if(st.step>=2) rows.push(['Изделие',GN[st.garment]||'']);
+      const opts = [];
+      if (st.opt3d) opts.push('3D-объём (+20%)');
+      if (st.optMetal) opts.push('Металлизированная нить (+25%)');
+      if (opts.length) rows.push(['Опции', opts.join(', ')]);
     }
-    if(st.step>=3){
-      const w=parseFloat(kfW.value)||0, h=parseFloat(kfH.value)||0;
-      rows.push(['Размер', (w>0&&h>0) ? w+'×'+h+' см' : '—']);
-    }
-    if(st.step>=3 && st.opt3d)    rows.push(['Опция','3D-объём (+15%)']);
-    if(st.step>=3 && st.optMetal) rows.push(['Опция','Металлик (+30%)']);
-    if(st.step>=4) rows.push(['Кол-во',qty+' шт']);
-    if(st.step>=4 && st.ownGarment) rows.push(['Скидка','Своё изделие −10%',true]);
-    if(st.step>=5) rows.push(['Сроки',st.deadline==='urgent'?'Срочно, до 3 дн.':'Стандарт 5–12 дн.']);
-    if(st.step>=5) rows.push(['Файл вышивки', st.hasFile?'Есть — запросим':'Нет — разрабатываем']);
-    if(st.step>=3) rows.push(['Нанесение',sub.toLocaleString('ru-RU')+' ₽']);
 
-    summaryEl.innerHTML = rows.map(r=>
-      '<div class="kf-sum-row'+(r[2]?' kf-discount':'')+'">'+
-      '<span class="kf-sum-key">'+r[0]+'</span>'+
-      '<span class="kf-sum-val">'+r[1]+'</span></div>'
+    if (st.step >= 3) rows.push(['Кол-во', data.qty + ' шт']);
+    if (st.step >= 4) rows.push(['Сроки', st.deadline === 'urgent' ? 'Срочный запуск (+30%)' : 'Стандартные сроки']);
+    if (data.sub > 0) rows.push(['Нанесение', data.sub.toLocaleString('ru-RU') + ' ₽']);
+
+    summaryEl.innerHTML = rows.map(r =>
+      '<div class="kf-sum-row">' +
+      '<span class="kf-sum-key">' + r[0] + '</span>' +
+      '<span class="kf-sum-val">' + r[1] + '</span></div>'
     ).join('');
   }
 
-  /* ── КОРЗИНА ── */
-  const MIN_ORDER = 2500;
-  function itemLabel(){
-    const name = st.type==='patches'
-      ? (PN[st.patchType]||'Шеврон')
-      : (GN[st.garment]||'Вышивка');
-    const w = parseFloat(kfW.value)||0;
-    const h = parseFloat(kfH.value)||0;
-    const sz = (w>0 && h>0) ? w+'×'+h+' см' : 'размер не указан';
-    return {name, meta: sz+' · '+st.qty+' шт'};
+  function itemLabel() {
+    const size = getCurrentSize();
+    const name = st.type === 'patches' ? (PATCH_NAMES[st.patchType] || 'Шеврон / нашивка') : 'Вышивка на одежде';
+    const meta = (size.w > 0 && size.h > 0 ? size.w + '×' + size.h + ' см' : 'размер не указан') + ' · ' + st.qty + ' шт';
+    return { name, meta, details: getCurrentOptionsLabel() };
   }
 
-  function addToCart(){
-    const d = calcPrice();
-    const lbl = itemLabel();
-    const fileInfo = st.hasFile ? 'файл есть' : 'файла нет — разрабатываем';
-    if(st.editId!==null){
-      const idx = cart.findIndex(c=>c.id===st.editId);
-      if(idx!==-1) cart[idx] = {id:st.editId,...lbl,unit:d.unit,qty:d.qty,sub:d.sub,hasFile:st.hasFile,fileInfo};
-      st.editId = null;
-    } else {
-      cart.push({id:nextId++,...lbl,unit:d.unit,qty:d.qty,sub:d.sub,hasFile:st.hasFile,fileInfo});
+  function updateBadge() {
+    if (editBadge) editBadge.style.display = st.editId !== null ? '' : 'none';
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function renderCart() {
+    const has = cart.length > 0;
+    if (cartEmpty) cartEmpty.style.display = has ? 'none' : '';
+    if (cartTotal) cartTotal.style.display = has ? '' : 'none';
+    if (cartItems) {
+      [...cartItems.children].forEach(el => {
+        if (el !== cartEmpty) el.remove();
+      });
     }
-    renderCart();
-    updateBadge();
-  }
 
-  function removeItem(id){
-    cart = cart.filter(c=>c.id!==id);
-    if(st.editId===id){st.editId=null;updateBadge();}
-    renderCart();
-  }
-
-  function editItem(id){
-    st.editId = id;
-    st.step = 1;
-    updateBadge();
-    renderStep();
-    document.getElementById('kfShell').scrollIntoView({behavior:'smooth',block:'start'});
-  }
-
-  function resetNew(){
-    st.editId=null; st.step=1;
-    st.type='embroidery'; st.garment='polo'; st.garSurcharge=0;
-    st.ownGarment=false;
-    st.opt3d=false; st.optMetal=false;
-    st.qty=1; st.deadline='standard'; st.deadSurcharge=0; st.patchType='patch_std';
-    st.hasFile=false;
-    // Сбросить UI
-    const shell = document.getElementById('kfShell');
-    shell.querySelectorAll('.kf-card-btn.active').forEach(b=>b.classList.remove('active'));
-    shell.querySelectorAll('.kf-stage[data-step="1"] .kf-card-btn[data-value="embroidery"]').forEach(b=>b.classList.add('active'));
-    shell.querySelectorAll('.kf-stage[data-step="2"] .kf-card-btn[data-value="polo"]').forEach(b=>b.classList.add('active'));
-    if(kfW) kfW.value='';
-    if(kfH) kfH.value='';
-    // Сбросить кнопку файла вышивки
-    if(digYes){digYes.classList.add('active');}
-    if(digNo){digNo.classList.remove('active');}
-    if(digHint) digHint.textContent='Мы подготовим программу для вышивальной машины — это входит в стоимость. Файл останется у нас для быстрого повторного заказа.';
-    shell.querySelectorAll('.kf-pill').forEach(b=>b.classList.remove('active'));
-    shell.querySelectorAll('.kf-stage[data-step="2"] .kf-pill[data-value="ours"]').forEach(b=>b.classList.add('active'));
-    shell.querySelectorAll('.kf-stage[data-step="5"] .kf-card-btn[data-value="standard"]').forEach(b=>b.classList.add('active'));
-    document.querySelectorAll('.kf-qty-btn').forEach(b=>b.classList.remove('active'));
-    const b1 = document.querySelector('#kfQtyBtns .kf-qty-btn[data-qty="1"]');
-    if(b1) b1.classList.add('active');
-    qtySlider.value=1;
-    updateBadge();
-    updateQtyUI();
-    // Сбросить блок «Стоимость позиции» в нейтральное состояние
-    totalEl.textContent = '—';
-    perUnitEl.textContent = '';
-    priceNote.textContent = 'Выберите параметры — цена появится здесь';
-    summaryEl.innerHTML = '';
-    renderStep();
-    document.getElementById('kfShell').scrollIntoView({behavior:'smooth',block:'start'});
-  }
-
-  function updateBadge(){
-    if(editBadge) editBadge.style.display = st.editId!==null ? '' : 'none';
-  }
-
-  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-  function renderCart(){
-    const has = cart.length>0;
-    if(cartEmpty) cartEmpty.style.display = has?'none':'';
-    if(cartTotal) cartTotal.style.display = has?'':'none';
-    // Удалить старые карточки
-    if(cartItems) [...cartItems.children].forEach(el=>{if(el!==cartEmpty)el.remove();});
-    let grand=0;
-    cart.forEach(item=>{
+    let grand = 0;
+    cart.forEach(item => {
       grand += item.sub;
       const el = document.createElement('div');
-      el.className='kf-cart-item'+(st.editId===item.id?' kf-cart-item-editing':'');
-      el.innerHTML=
-        '<div class="kf-cart-item-info">'+
-        '<div class="kf-cart-item-name">'+esc(item.name)+'</div>'+
-        '<div class="kf-cart-item-meta">'+esc(item.meta)+' · '+item.sub.toLocaleString('ru-RU')+' ₽</div>'+
-        '<div class="kf-cart-item-meta" style="color:rgba(168,156,195,.6);margin-top:1px">'+esc(item.fileInfo||'')+'</div>'+
-        '</div>'+
-        '<button class="kf-cart-item-del" data-id="'+item.id+'" title="Удалить" type="button">×</button>';
-      el.querySelector('.kf-cart-item-info').addEventListener('click',()=>editItem(item.id));
-      el.querySelector('.kf-cart-item-del').addEventListener('click',e=>{e.stopPropagation();removeItem(item.id);});
-      if(cartItems) cartItems.insertBefore(el, cartEmpty);
-    });
-    if(cartTotalV) cartTotalV.textContent = grand.toLocaleString('ru-RU')+' ₽';
+      el.className = 'kf-cart-item' + (st.editId === item.id ? ' kf-cart-item-editing' : '');
+      el.innerHTML =
+        '<div class="kf-cart-item-info">' +
+        '<div class="kf-cart-item-name">' + esc(item.name) + '</div>' +
+        '<div class="kf-cart-item-meta">' + esc(item.meta) + ' · ' + item.sub.toLocaleString('ru-RU') + ' ₽</div>' +
+        (item.details ? '<div class="kf-cart-item-meta" style="color:rgba(168,156,195,.6);margin-top:1px">' + esc(item.details) + '</div>' : '') +
+        '</div>' +
+        '<button class="kf-cart-item-del" data-id="' + item.id + '" title="Удалить" type="button">×</button>';
 
-    // Предупреждение о минимальной сумме
+      el.querySelector('.kf-cart-item-info').addEventListener('click', () => editItem(item.id));
+      el.querySelector('.kf-cart-item-del').addEventListener('click', e => {
+        e.stopPropagation();
+        removeItem(item.id);
+      });
+      if (cartItems) cartItems.insertBefore(el, cartEmpty);
+    });
+
+    if (cartTotalV) cartTotalV.textContent = grand.toLocaleString('ru-RU') + ' ₽';
+
     const minWarn = $('kfMinWarn');
-    if(minWarn && has){
-      if(grand < MIN_ORDER){
+    if (minWarn && has) {
+      if (grand < MIN_ORDER) {
         const diff = (MIN_ORDER - grand).toLocaleString('ru-RU');
         minWarn.style.display = '';
         minWarn.innerHTML =
           '<strong style="color:var(--red)">Минимальная сумма заказа — 2 500 ₽</strong><br>' +
-          'Текущий итог: '+grand.toLocaleString('ru-RU')+' ₽ — не хватает '+diff+' ₽. ' +
-          'Можно увеличить тираж, добавить ещё позицию или выбрать больший размер вышивки.';
+          'Текущий итог: ' + grand.toLocaleString('ru-RU') + ' ₽ — не хватает ' + diff + ' ₽. ' +
+          'Можно увеличить тираж, добавить ещё позицию или выбрать больший размер.';
       } else {
         minWarn.style.display = 'none';
       }
-    } else if(minWarn){
+    } else if (minWarn) {
       minWarn.style.display = 'none';
     }
   }
 
-  /* ── ОБРАБОТЧИКИ ШАГОВ ── */
-  const shell = document.getElementById('kfShell');
-
-  // Шаг 1
-  shell.querySelectorAll('.kf-stage[data-step="1"] .kf-card-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      shell.querySelectorAll('.kf-stage[data-step="1"] .kf-card-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      st.type=btn.dataset.value;
-      calcPrice();
+  function syncTypeUI() {
+    if (!shell) return;
+    shell.querySelectorAll('.kf-stage[data-step="1"] .kf-card-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.value === st.type);
     });
-  });
-
-  // Шаг 2 — изделие
-  shell.querySelectorAll('.kf-stage[data-step="2"] .kf-card-btn[data-value]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      shell.querySelectorAll('.kf-stage[data-step="2"] .kf-card-btn[data-value]').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      st.garment=btn.dataset.value;
-      st.garSurcharge=parseInt(btn.dataset.surcharge)||0;
-      calcPrice();
-    });
-  });
-  shell.querySelectorAll('.kf-stage[data-step="2"] .kf-pill').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      shell.querySelectorAll('.kf-stage[data-step="2"] .kf-pill').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      st.ownGarment=btn.dataset.value==='client';
-      calcPrice();
-    });
-  });
-
-  // Шаг 2b — шевроны
-  shell.querySelectorAll('.kf-stage[data-step="2b"] .kf-card-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      shell.querySelectorAll('.kf-stage[data-step="2b"] .kf-card-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      st.patchType=btn.dataset.value;
-      calcPrice();
-    });
-  });
-
-  // Шаг 3 — размер (только ручной ввод)
-  [kfW,kfH].forEach(inp=>{if(inp)inp.addEventListener('input',calcPrice);});
-
-  // Шаг 3 — опции
-  shell.querySelectorAll('.kf-stage[data-step="3"] .kf-pill[data-opt]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      btn.classList.toggle('active');
-      if(btn.dataset.opt==='3d')      st.opt3d   =btn.classList.contains('active');
-      if(btn.dataset.opt==='metallic')st.optMetal=btn.classList.contains('active');
-      calcPrice();
-    });
-  });
-
-  // Шаг 4 — количество
-  document.getElementById('kfQtyBtns').addEventListener('click',e=>{
-    const btn=e.target.closest('.kf-qty-btn');
-    if(!btn)return;
-    document.querySelectorAll('.kf-qty-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    st.qty=parseInt(btn.dataset.qty);
-    qtySlider.value=Math.min(st.qty,500);
-    updateQtyUI(); calcPrice();
-  });
-  qtySlider.addEventListener('input',()=>{
-    st.qty=parseInt(qtySlider.value);
-    document.querySelectorAll('.kf-qty-btn').forEach(b=>b.classList.remove('active'));
-    const m=[...document.querySelectorAll('.kf-qty-btn')].find(b=>{
-      const bq=parseInt(b.dataset.qty);
-      return bq===300?st.qty>=300:bq===st.qty;
-    });
-    if(m)m.classList.add('active');
-    updateQtyUI(); calcPrice();
-  });
-
-  // Шаг 5 — сроки
-  shell.querySelectorAll('.kf-stage[data-step="5"] .kf-card-btn[data-value]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      shell.querySelectorAll('.kf-stage[data-step="5"] .kf-card-btn[data-value]').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      st.deadline=btn.dataset.value;
-      st.deadSurcharge=parseInt(btn.dataset.surcharge)||0;
-      calcPrice();
-    });
-  });
-
-  // Файл
-  const fileInput = $('kfLeadFile');
-  if(fileInput) fileInput.addEventListener('change',e=>{
-    const f=e.target.files[0];
-    $('kfFileName').textContent=f?f.name:'JPG, PNG, SVG, PDF, AI — можно прислать позже';
-  });
-
-  /* ── ФАЙЛ ВЫШИВКИ ── */
-  const digYes  = $('kfDigYes');
-  const digNo   = $('kfDigNo');
-  const digHint = $('kfDigHint');
-  if(digYes) digYes.addEventListener('click',()=>{
-    digYes.classList.add('active'); digNo.classList.remove('active');
-    st.hasFile = false;
-    if(digHint) digHint.textContent = 'Мы подготовим программу для вышивальной машины — это входит в стоимость. Файл останется у нас для быстрого повторного заказа.';
-  });
-  if(digNo) digNo.addEventListener('click',()=>{
-    digNo.classList.add('active'); digYes.classList.remove('active');
-    st.hasFile = true;
-    if(digHint) digHint.textContent = 'Отлично — после подтверждения заказа менеджер запросит ваш файл вышивки.';
-  });
-
-  /* ── НАВИГАЦИЯ ── */
-  prevBtn.addEventListener('click',()=>{if(st.step>1){st.step--;renderStep();}});
-  nextBtn.addEventListener('click',()=>{
-    if(st.step<st.maxStep){
-      // Если корзина уже не пуста и мы на шаге 4 — автосохранить позицию перед переходом
-      if(st.step===4 && cart.length>0 && st.editId===null){
-        addToCart();
-      }
-      st.step++;
-      renderStep();
-    }
-  });
-
-  /* ── МУЛЬТИЗАКАЗ ── */
-  if(addNewBtn) addNewBtn.addEventListener('click',()=>{ addToCart(); resetNew(); });
-  if(saveBtn)   saveBtn.addEventListener('click',()=>{
-    addToCart();
-    saveBtn.textContent='Сохранено ✓';
-    setTimeout(()=>{saveBtn.textContent='Сохранить позицию';},1800);
-  });
-
-  /* ── ОТПРАВКА ── */
-  submitBtn.addEventListener('click', async ()=>{
-    const nameEl=$('kfLeadName'), phoneEl=$('kfLeadPhone');
-    let ok=true;
-    const ne=!nameEl.value.trim();
-    nameEl.classList.toggle('kf-invalid',ne);
-    $('kfLeadNameErr').classList.toggle('show',ne);
-    if(ne)ok=false;
-    const pe=!phoneEl.value.trim();
-    phoneEl.classList.toggle('kf-invalid',pe);
-    $('kfLeadPhoneErr').classList.toggle('show',pe);
-    if(pe)ok=false;
-    if(!ok)return;
-
-    // Если корзина пуста — добавить текущую позицию
-    if(cart.length===0 && st.step>=4) addToCart();
-
-    const grand=cart.reduce((s,i)=>s+i.sub,0);
-    if(grand < MIN_ORDER){
-      const minWarn = $('kfMinWarn');
-      if(minWarn){
-        minWarn.style.display = '';
-        const diff = (MIN_ORDER - grand).toLocaleString('ru-RU');
-        minWarn.innerHTML =
-          '<strong style="color:var(--red)">Минимальная сумма заказа — 2 500 ₽</strong><br>' +
-          'Текущий итог: '+grand.toLocaleString('ru-RU')+' ₽ — не хватает '+diff+' ₽. ' +
-          'Увеличьте тираж или добавьте ещё позицию.';
-        minWarn.scrollIntoView({behavior:'smooth',block:'center'});
-      }
-      return;
-    }
-    const payload={
-      org:  $('kfLeadOrg').value,
-      name: nameEl.value, phone: phoneEl.value,
-      email:$('kfLeadEmail').value,
-      comment:$('kfLeadComment').value,
-      items: cart.map(i=>({name:i.name,meta:i.meta,qty:i.qty,unit:i.unit,sub:i.sub,fileInfo:i.fileInfo||''})),
-      grandTotal: grand,
-      deadline: st.deadline,
-    };
-    let tgText = '🛒 *Заказ из конфигуратора Мируся*\n\n';
-    tgText += '*Позиции:*\n';
-    payload.items.forEach(function(i) {
-      tgText += `• ${i.name} · ${i.meta} — ${i.sub.toLocaleString('ru-RU')} ₽\n`;
-      if (i.fileInfo) tgText += `  _${i.fileInfo}_\n`;
-    });
-    tgText += `\n*Итого:* ${payload.grandTotal.toLocaleString('ru-RU')} ₽`;
-    tgText += `\n*Сроки:* ${payload.deadline === 'urgent' ? 'Срочно' : 'Стандарт'}`;
-    tgText += `\n\n👤 *Контакт:*`;
-    if (payload.org)     tgText += `\nКомпания: ${payload.org}`;
-    tgText += `\nИмя: ${payload.name}`;
-    tgText += `\nТелефон: ${payload.phone}`;
-    if (payload.email)   tgText += `\nEmail: ${payload.email}`;
-    if (payload.comment) tgText += `\nКомментарий: ${payload.comment}`;
-    tgText += `\n\n🕐 ${new Date().toLocaleString('ru-RU')}`;
-
-    await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: tgText })
-    });
-    $('kfSubmitSuccess').classList.add('show');
-    submitBtn.textContent='Заявка отправлена ✓';
-    submitBtn.disabled=true;
-  });
-
-  /* ── QTY UI ── */
-  const TIERS=[
-    {min:1,  max:9,  note:'Единичный тираж — полная ставка'},
-    {min:10, max:29, note:'Хорошая партия — скидка ~25%'},
-    {min:30, max:99, note:'Корпоративный тираж — скидка ~40%'},
-    {min:100,max:299,note:'Скидка ~55%, дигитайзинг бесплатно'},
-    {min:300,max:9999,note:'Максимальная скидка'},
-  ];
-  function updateQtyUI(){
-    qtyVal.textContent=st.qty+' шт';
-    const hint=$('kfQtyTierHint');
-    const t=TIERS.find(t=>st.qty>=t.min&&st.qty<=t.max);
-    if(t&&hint){hint.innerHTML='<strong>'+st.qty+' шт:</strong> '+t.note+'.';hint.classList.add('show');}
-    qtyDisc.textContent=st.qty>=100?'Дигитайзинг включён бесплатно.':'';
   }
 
-  /* ── ИНИЦИАЛИЗАЦИЯ ── */
-  const b1=document.querySelector('#kfQtyBtns .kf-qty-btn[data-qty="1"]');
-  if(b1) b1.classList.add('active');
-  updateQtyUI();
+  function syncEmbroideryOptionsUI() {
+    if (!shell) return;
+    shell.querySelectorAll('.kf-stage[data-step="2"] .kf-pill[data-opt]').forEach(btn => {
+      const active = (btn.dataset.opt === '3d' && st.opt3d) || (btn.dataset.opt === 'metallic' && st.optMetal);
+      btn.classList.toggle('active', !!active);
+    });
+  }
+
+  function syncPatchUI() {
+    if (!shell) return;
+    shell.querySelectorAll('.kf-stage[data-step="2b"] .kf-card-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.value === st.patchType);
+    });
+  }
+
+  function syncDeadlineUI() {
+    if (!shell) return;
+    shell.querySelectorAll('.kf-stage[data-step="4"] .kf-card-btn[data-value]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.value === st.deadline);
+    });
+  }
+
+  function syncQtyButtonsUI() {
+    document.querySelectorAll('.kf-qty-btn').forEach(b => b.classList.remove('active'));
+    const m = [...document.querySelectorAll('.kf-qty-btn')].find(b => {
+      const bq = parseInt(b.dataset.qty, 10);
+      return bq === 300 ? st.qty >= 300 : bq === st.qty;
+    });
+    if (m) m.classList.add('active');
+    if (qtySlider) qtySlider.value = Math.min(st.qty, 500);
+  }
+
+  function updateQtyUI() {
+    if (qtyVal) qtyVal.textContent = st.qty + ' шт';
+    const hint = $('kfQtyTierHint');
+    const t = TIERS.find(row => st.qty >= row.min && st.qty <= row.max);
+    if (t && hint) {
+      hint.innerHTML = '<strong>' + st.qty + ' шт:</strong> ' + t.note + '.';
+      hint.classList.add('show');
+    }
+    if (qtyDisc) qtyDisc.textContent = 'Чем больше тираж, тем ниже ориентировочная стоимость за штуку.';
+  }
+
+  function syncUIFromState() {
+    syncTypeUI();
+    syncEmbroideryOptionsUI();
+    syncPatchUI();
+    syncDeadlineUI();
+    syncQtyButtonsUI();
+    updateQtyUI();
+  }
+
+  function renderStep() {
+    const total = st.maxStep;
+    if (stepLabel) stepLabel.textContent = 'Шаг ' + st.step + ' из ' + total;
+    if (progBar) progBar.style.width = (st.step / total * 100) + '%';
+
+    const k = stepKey();
+    const txt = (STEPS[st.type] || STEPS.embroidery)[k] || {};
+    if (stepTitle) stepTitle.textContent = txt.t || '';
+    if (stepDesc) stepDesc.textContent = txt.d || '';
+
+    document.querySelectorAll('.kf-stage').forEach(s => s.classList.remove('active'));
+    const target = st.type === 'patches' && st.step === 2
+      ? document.querySelector('.kf-stage[data-step="2b"]')
+      : document.querySelector('.kf-stage[data-step="' + st.step + '"]');
+    if (target) target.classList.add('active');
+
+    if (prevBtn) prevBtn.disabled = st.step === 1;
+    if (nextBtn) nextBtn.style.display = st.step < total ? '' : 'none';
+    if (submitBtn) submitBtn.style.display = st.step === total ? '' : 'none';
+
+
+    const priceBox = $('kfPriceBox');
+    const hidePrice = st.step >= 4 && cart.length > 0;
+    if (priceBox) priceBox.style.display = hidePrice ? 'none' : '';
+    if (summaryEl) summaryEl.style.display = hidePrice ? 'none' : '';
+
+    calcPrice();
+  }
+
+  function addToCart() {
+    const d = calcPrice();
+    if (!d.size.w || !d.size.h) return false;
+
+    const lbl = itemLabel();
+    const item = {
+      id: st.editId !== null ? st.editId : nextId++,
+      type: st.type,
+      patchType: st.patchType,
+      opt3d: st.opt3d,
+      optMetal: st.optMetal,
+      qty: d.qty,
+      deadline: st.deadline,
+      deadSurcharge: st.deadSurcharge,
+      w: d.size.w,
+      h: d.size.h,
+      unit: d.unit,
+      sub: d.sub,
+      name: lbl.name,
+      meta: lbl.meta,
+      details: lbl.details
+    };
+
+    if (st.editId !== null) {
+      const idx = cart.findIndex(c => c.id === st.editId);
+      if (idx !== -1) cart[idx] = item;
+      st.editId = null;
+    } else {
+      cart.push(item);
+    }
+
+    renderCart();
+    updateBadge();
+    return true;
+  }
+
+  function removeItem(id) {
+    cart = cart.filter(c => c.id !== id);
+    if (st.editId === id) {
+      st.editId = null;
+      updateBadge();
+    }
+    renderCart();
+  }
+
+  function loadItemToState(item) {
+    st.editId = item.id;
+    st.type = item.type;
+    st.patchType = item.patchType || 'patch_std';
+    st.opt3d = !!item.opt3d;
+    st.optMetal = !!item.optMetal;
+    st.qty = item.qty || 1;
+    st.deadline = item.deadline || 'standard';
+    st.deadSurcharge = item.deadSurcharge || 0;
+    if (kfW) kfW.value = item.type === 'embroidery' ? item.w : '';
+    if (kfH) kfH.value = item.type === 'embroidery' ? item.h : '';
+    if (kfPatchW) kfPatchW.value = item.type === 'patches' ? item.w : '';
+    if (kfPatchH) kfPatchH.value = item.type === 'patches' ? item.h : '';
+    st.step = 1;
+    syncUIFromState();
+    updateBadge();
+    renderStep();
+    $('kfShell').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function editItem(id) {
+    const item = cart.find(c => c.id === id);
+    if (!item) return;
+    loadItemToState(item);
+  }
+
+  function resetNew() {
+    const fresh = createDefaultState();
+    Object.keys(fresh).forEach(key => { st[key] = fresh[key]; });
+    if (kfW) kfW.value = '';
+    if (kfH) kfH.value = '';
+    if (kfPatchW) kfPatchW.value = '';
+    if (kfPatchH) kfPatchH.value = '';
+    syncUIFromState();
+    updateBadge();
+    totalEl.textContent = '—';
+    perUnitEl.textContent = '';
+    priceNote.textContent = 'Укажите размер — калькулятор покажет ориентировочную стоимость';
+    if (summaryEl) summaryEl.innerHTML = '';
+    renderStep();
+    $('kfShell').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  if (shell) {
+    shell.querySelectorAll('.kf-stage[data-step="1"] .kf-card-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        st.type = btn.dataset.value;
+        syncTypeUI();
+        calcPrice();
+        renderStep();
+      });
+    });
+
+    shell.querySelectorAll('.kf-stage[data-step="2"] .kf-pill[data-opt]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        if (btn.dataset.opt === '3d') st.opt3d = btn.classList.contains('active');
+        if (btn.dataset.opt === 'metallic') st.optMetal = btn.classList.contains('active');
+        calcPrice();
+      });
+    });
+
+    shell.querySelectorAll('.kf-stage[data-step="2b"] .kf-card-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        st.patchType = btn.dataset.value;
+        syncPatchUI();
+        calcPrice();
+      });
+    });
+
+    shell.querySelectorAll('.kf-stage[data-step="4"] .kf-card-btn[data-value]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        st.deadline = btn.dataset.value;
+        st.deadSurcharge = parseInt(btn.dataset.surcharge, 10) || 0;
+        syncDeadlineUI();
+        calcPrice();
+      });
+    });
+  }
+
+  [kfW, kfH, kfPatchW, kfPatchH].forEach(inp => {
+    if (inp) inp.addEventListener('input', calcPrice);
+  });
+
+  const qtyBtns = $('kfQtyBtns');
+  if (qtyBtns) {
+    qtyBtns.addEventListener('click', e => {
+      const btn = e.target.closest('.kf-qty-btn');
+      if (!btn) return;
+      st.qty = parseInt(btn.dataset.qty, 10);
+      syncQtyButtonsUI();
+      updateQtyUI();
+      calcPrice();
+    });
+  }
+
+  if (qtySlider) {
+    qtySlider.addEventListener('input', () => {
+      st.qty = parseInt(qtySlider.value, 10);
+      syncQtyButtonsUI();
+      updateQtyUI();
+      calcPrice();
+    });
+  }
+
+  const fileInput = $('kfLeadFile');
+  if (fileInput) {
+    fileInput.addEventListener('change', e => {
+      const f = e.target.files[0];
+      $('kfFileName').textContent = f ? f.name : 'JPG, PNG, SVG, PDF, AI — можно прислать позже';
+    });
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (st.step > 1) {
+        st.step--;
+        renderStep();
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      if (st.step < st.maxStep) {
+        if (st.step === 3 && cart.length > 0 && st.editId === null) {
+          addToCart();
+        }
+        st.step++;
+        renderStep();
+      }
+    });
+  }
+
+
+
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      const nameEl = $('kfLeadName');
+      const phoneEl = $('kfLeadPhone');
+      let ok = true;
+
+      const nameEmpty = !nameEl.value.trim();
+      nameEl.classList.toggle('kf-invalid', nameEmpty);
+      $('kfLeadNameErr').classList.toggle('show', nameEmpty);
+      if (nameEmpty) ok = false;
+
+      const phoneEmpty = !phoneEl.value.trim();
+      phoneEl.classList.toggle('kf-invalid', phoneEmpty);
+      $('kfLeadPhoneErr').classList.toggle('show', phoneEmpty);
+      if (phoneEmpty) ok = false;
+
+      if (!ok) return;
+
+      if (cart.length === 0 && st.step >= 3) addToCart();
+
+      const grand = cart.reduce((sum, item) => sum + item.sub, 0);
+      if (grand < MIN_ORDER) {
+        const minWarn = $('kfMinWarn');
+        if (minWarn) {
+          minWarn.style.display = '';
+          const diff = (MIN_ORDER - grand).toLocaleString('ru-RU');
+          minWarn.innerHTML =
+            '<strong style="color:var(--red)">Минимальная сумма заказа — 2 500 ₽</strong><br>' +
+            'Текущий итог: ' + grand.toLocaleString('ru-RU') + ' ₽ — не хватает ' + diff + ' ₽. ' +
+            'Увеличьте тираж или добавьте ещё позицию.';
+          minWarn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      const payload = {
+        org: $('kfLeadOrg').value,
+        name: nameEl.value,
+        phone: phoneEl.value,
+        email: $('kfLeadEmail').value,
+        comment: $('kfLeadComment').value,
+        items: cart.map(i => ({
+          name: i.name,
+          meta: i.meta,
+          qty: i.qty,
+          unit: i.unit,
+          sub: i.sub,
+          details: i.details || ''
+        })),
+        grandTotal: grand,
+        deadline: st.deadline
+      };
+
+      let tgText = '🛒 *Заказ из конфигуратора Мируся*\n\n';
+      tgText += '*Позиции:*\n';
+      payload.items.forEach(i => {
+        tgText += `• ${i.name} · ${i.meta} — ${i.sub.toLocaleString('ru-RU')} ₽\n`;
+        if (i.details) tgText += `  _${i.details}_\n`;
+      });
+      tgText += `\n*Итого:* ${payload.grandTotal.toLocaleString('ru-RU')} ₽`;
+      tgText += `\n*Сроки:* ${payload.deadline === 'urgent' ? 'Срочно' : 'Стандарт'}`;
+      tgText += '\n\n👤 *Контакт:*';
+      if (payload.org) tgText += `\nКомпания: ${payload.org}`;
+      tgText += `\nИмя: ${payload.name}`;
+      tgText += `\nТелефон: ${payload.phone}`;
+      if (payload.email) tgText += `\nEmail: ${payload.email}`;
+      if (payload.comment) tgText += `\nКомментарий: ${payload.comment}`;
+      tgText += `\n\n🕐 ${new Date().toLocaleString('ru-RU')}`;
+
+      await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: tgText })
+      });
+
+      if (successEl) successEl.classList.add('show');
+      submitBtn.textContent = 'Заявка отправлена ✓';
+      submitBtn.disabled = true;
+    });
+  }
+
+  const initialQtyBtn = document.querySelector('#kfQtyBtns .kf-qty-btn[data-qty="1"]');
+  if (initialQtyBtn) initialQtyBtn.classList.add('active');
+  syncUIFromState();
   updateBadge();
   renderStep();
   renderCart();

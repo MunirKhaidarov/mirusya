@@ -2161,98 +2161,34 @@ body.menu-open{
 <div class="reveal">
 <div class="s-label">Конфигуратор заказа</div>
 <h2 class="s-title">РАССЧИТАЙТЕ <span class="outline">СТОИМОСТЬ</span></h2>
-<p style="font-size:14px;line-height:1.7;color:var(--text);margin-top:12px;max-width:600px">Выбирайте параметры — цена считается прямо здесь. Без звонков, без стежков, без лишних уточнений.</p>
+<p style="font-size:14px;line-height:1.7;color:var(--text);margin-top:12px;max-width:600px">Укажите размер, тираж и опции — калькулятор сразу покажет ориентировочную стоимость. Без звонков и лишних уточнений.</p>
 </div>
 <div class="kf-shell reveal" id="kfShell" style="margin-top:56px">
 <!-- Левая панель — шаги -->
 <div class="kf-panel">
 <div class="kf-topline">
-<div class="kf-step-kicker" id="kfStepLabel">Шаг 1 из 6</div>
+<div class="kf-step-kicker" id="kfStepLabel">Шаг 1 из 5</div>
 <div class="kf-progress"><div class="kf-progress-bar" id="kfProgressBar"></div></div>
 </div>
-<div class="kf-step-title" id="kfStepTitle">Что нужно вышить?</div>
-<div class="kf-step-desc" id="kfStepDesc">Выберите тип продукта — конфигуратор настроится под вашу задачу.</div>
+<div class="kf-step-title" id="kfStepTitle">Что рассчитываем?</div>
+<div class="kf-step-desc" id="kfStepDesc">Выберите направление — калькулятор подстроится под вашу задачу.</div>
 <!-- ШАГ 1: Тип продукта -->
 <div class="kf-stage active" data-step="1">
 <div class="kf-choice-grid">
 <button class="kf-card-btn active" data-value="embroidery" id="kfTypeEmb" type="button">
 <span class="kf-card-eyebrow">Основное направление</span>
 <span class="kf-card-title">Вышивка на одежде</span>
-<span class="kf-card-text">Логотипы, надписи, эмблемы на любых изделиях</span>
+<span class="kf-card-text">Логотипы, надписи и эмблемы — ориентировочный расчёт по размеру и тиражу</span>
 </button>
 <button class="kf-card-btn" data-value="patches" id="kfTypePatch" type="button">
 <span class="kf-card-eyebrow">Отдельный продукт</span>
 <span class="kf-card-title">Шевроны / нашивки</span>
-<span class="kf-card-text">Патчи, нашивки, шевроны с любым крепле­нием</span>
+<span class="kf-card-text">Патчи и шевроны с разными вариантами крепления</span>
 </button>
 </div>
 </div>
-<!-- ШАГ 2: Изделие (для embroidery) -->
+<!-- ШАГ 2: Параметры вышивки -->
 <div class="kf-stage" data-step="2">
-<div class="kf-inline-label">На что наносим вышивку?</div>
-<div class="kf-choice-grid c3">
-<button class="kf-card-btn active" data-surcharge="0" data-value="polo" type="button">
-<span class="kf-card-eyebrow">Одежда</span>
-<span class="kf-card-title">Поло / футболка</span>
-</button>
-<button class="kf-card-btn" data-surcharge="15" data-value="hoodie" type="button">
-<span class="kf-card-eyebrow">Одежда</span>
-<span class="kf-card-title">Худи / толстовка</span>
-</button>
-<button class="kf-card-btn" data-surcharge="0" data-value="jacket" type="button">
-<span class="kf-card-eyebrow">Одежда</span>
-<span class="kf-card-title">Куртка / жилет</span>
-</button>
-<button class="kf-card-btn" data-surcharge="20" data-value="cap" type="button">
-<span class="kf-card-eyebrow">Аксессуары</span>
-<span class="kf-card-title">Кепка / шапка</span>
-</button>
-<button class="kf-card-btn" data-surcharge="0" data-value="bag" type="button">
-<span class="kf-card-eyebrow">Аксессуары</span>
-<span class="kf-card-title">Сумка / рюкзак</span>
-</button>
-<button class="kf-card-btn" data-surcharge="0" data-value="other" type="button">
-<span class="kf-card-eyebrow">Другое</span>
-<span class="kf-card-title">Иное изделие</span>
-</button>
-</div>
-<div style="margin-top:16px">
-<div class="kf-inline-label">Изделие своё или подбираете у нас?</div>
-<div class="kf-toggle-row">
-<button class="kf-pill active" data-value="ours" type="button">Подбираем у вас</button>
-<button class="kf-pill" data-value="client" type="button">Привезу своё (−10%)</button>
-</div>
-<p style="font-size:11px;color:var(--gray);margin-top:10px;line-height:1.6">Если привозите своё изделие — скидка 10% на нанесение. Кепки и шапки + 20% к стоимости из-за особой оснастки.</p>
-</div>
-</div>
-<!-- ШАГ 2b: Тип шеврона (для patches) -->
-<div class="kf-stage" data-step="2b">
-<div class="kf-inline-label">Тип шеврона / нашивки</div>
-<div class="kf-choice-grid">
-<button class="kf-card-btn active" data-value="patch_std" type="button">
-<span class="kf-card-eyebrow">Стандарт</span>
-<span class="kf-card-title">Ткань + вышивка</span>
-<span class="kf-card-text">Прямоугольный или фигурный, оверлок по краю</span>
-</button>
-<button class="kf-card-btn" data-value="patch_velcro" type="button">
-<span class="kf-card-eyebrow">С липучкой</span>
-<span class="kf-card-title">Велкро-крепление</span>
-<span class="kf-card-text">+30 ₽/шт к базовой цене — пришиваем велкро</span>
-</button>
-<button class="kf-card-btn" data-value="patch_thermo" type="button">
-<span class="kf-card-eyebrow">Термонаклейка</span>
-<span class="kf-card-title">Термоклей на тыльной стороне</span>
-<span class="kf-card-text">Быстро и удобно — клеится утюгом</span>
-</button>
-<button class="kf-card-btn" data-value="patch_3d" type="button">
-<span class="kf-card-eyebrow">Объёмный</span>
-<span class="kf-card-title">3D-патч</span>
-<span class="kf-card-text">+15% — подложка из пеноматериала</span>
-</button>
-</div>
-</div>
-<!-- ШАГ 3: Размер вышивки -->
-<div class="kf-stage" data-step="3">
 <div class="kf-inline-label">Укажите размер вышивки в сантиметрах</div>
 <div class="kf-custom-row" style="margin-top:4px">
 <div class="kf-custom-field">
@@ -2264,17 +2200,55 @@ body.menu-open{
 <input id="kfH" max="60" min="1" placeholder="например, 6" type="number" value=""/>
 </div>
 </div>
-<p style="font-size:11px;color:var(--gray);margin-top:12px;line-height:1.6">Размер вышивки — это габариты самого рисунка, не изделия. Если не знаете точно — напишите примерный, уточним при звонке.</p>
+<p style="font-size:11px;color:var(--gray);margin-top:12px;line-height:1.6">Размер вышивки — это габариты самого рисунка. Калькулятор покажет предварительную стоимость по размеру, тиражу и выбранным опциям.</p>
 <div style="margin-top:20px">
-<div class="kf-inline-label">Опции дизайна</div>
+<div class="kf-inline-label">Дополнительные опции</div>
 <div class="kf-toggle-row">
-<button class="kf-pill" data-opt="3d" data-surcharge="15" type="button">3D-объём (+15%)</button>
-<button class="kf-pill" data-opt="metallic" data-surcharge="30" type="button">Металлизированная нить (+30%)</button>
+<button class="kf-pill" data-opt="3d" type="button">3D-объём (+20%)</button>
+<button class="kf-pill" data-opt="metallic" type="button">Металлизированная нить (+25%)</button>
 </div>
 </div>
 </div>
-<!-- ШАГ 4: Количество -->
-<div class="kf-stage" data-step="4">
+<!-- ШАГ 2b: Параметры шеврона -->
+<div class="kf-stage" data-step="2b">
+<div class="kf-inline-label">Тип шеврона / нашивки</div>
+<div class="kf-choice-grid">
+<button class="kf-card-btn active" data-value="patch_std" type="button">
+<span class="kf-card-eyebrow">Стандарт</span>
+<span class="kf-card-title">Ткань + вышивка</span>
+<span class="kf-card-text">Классический шеврон с обработкой края</span>
+</button>
+<button class="kf-card-btn" data-value="patch_velcro" type="button">
+<span class="kf-card-eyebrow">С липучкой</span>
+<span class="kf-card-title">Велкро-крепление</span>
+<span class="kf-card-text">+30 ₽/шт к базовой цене</span>
+</button>
+<button class="kf-card-btn" data-value="patch_thermo" type="button">
+<span class="kf-card-eyebrow">Термонаклейка</span>
+<span class="kf-card-title">Термоклей</span>
+<span class="kf-card-text">Для быстрого нанесения на изделие</span>
+</button>
+<button class="kf-card-btn" data-value="patch_3d" type="button">
+<span class="kf-card-eyebrow">Объёмный</span>
+<span class="kf-card-title">3D-патч</span>
+<span class="kf-card-text">+15% — объёмный эффект</span>
+</button>
+</div>
+<div class="kf-inline-label" style="margin-top:20px">Укажите размер шеврона в сантиметрах</div>
+<div class="kf-custom-row" style="margin-top:4px">
+<div class="kf-custom-field">
+<label>Ширина, см</label>
+<input id="kfPatchW" max="60" min="1" placeholder="например, 8" type="number" value=""/>
+</div>
+<div class="kf-custom-field">
+<label>Высота, см</label>
+<input id="kfPatchH" max="60" min="1" placeholder="например, 8" type="number" value=""/>
+</div>
+</div>
+<p style="font-size:11px;color:var(--gray);margin-top:12px;line-height:1.6">Калькулятор показывает ориентировочную стоимость шеврона по размеру, типу крепления и тиражу.</p>
+</div>
+<!-- ШАГ 3: Количество -->
+<div class="kf-stage" data-step="3">
 <div class="kf-inline-label">Выберите тираж</div>
 <div class="kf-qty-row" id="kfQtyBtns">
 <button class="kf-qty-btn" data-qty="1" type="button">1 шт</button>
@@ -2291,35 +2265,27 @@ body.menu-open{
 </div>
 <input class="kf-slider" id="kfQtySlider" max="500" min="1" step="1" type="range" value="1"/>
 <div class="kf-qty-tier-hint" id="kfQtyTierHint"></div>
-<p class="kf-qty-note" id="kfQtyDiscount">Цена за штуку снижается с ростом тиража — выберите количество, чтобы увидеть актуальную ставку.</p>
+<p class="kf-qty-note" id="kfQtyDiscount">Чем больше тираж, тем ниже ориентировочная стоимость за штуку.</p>
 </div>
 </div>
-<!-- ШАГ 5: Сроки и доп. опции -->
-<div class="kf-stage" data-step="5">
+<!-- ШАГ 4: Сроки -->
+<div class="kf-stage" data-step="4">
 <div class="kf-inline-label">Сроки производства</div>
 <div class="kf-choice-grid">
 <button class="kf-card-btn active" data-surcharge="0" data-value="standard" id="kfDeadStd" type="button">
 <span class="kf-card-eyebrow">Стандарт</span>
 <span class="kf-card-title">5–12 рабочих дней</span>
-<span class="kf-card-text">Для большинства заказов — оптимально</span>
+<span class="kf-card-text">Оптимально для большинства заказов</span>
 </button>
-<button class="kf-card-btn" data-surcharge="50" data-value="urgent" id="kfDeadUrg" type="button">
+<button class="kf-card-btn" data-surcharge="30" data-value="urgent" id="kfDeadUrg" type="button">
 <span class="kf-card-eyebrow">Приоритетный запуск</span>
-<span class="kf-card-title">До 3 рабочих дней</span>
-<span class="kf-card-text">Приоритетный запуск, небольшой тираж</span>
+<span class="kf-card-title">Срочный запуск</span>
+<span class="kf-card-text">+30% к стоимости, если нужен ускоренный старт</span>
 </button>
 </div>
-<div style="margin-top:24px">
-<div class="kf-inline-label">Файл вышивки (программа для машины)</div>
-<div class="kf-toggle-row">
-<button class="kf-pill active" data-value="yes" id="kfDigYes" type="button">Нет — разработайте сами</button>
-<button class="kf-pill" data-value="no" id="kfDigNo" type="button">Есть — запросим файл</button>
 </div>
-<p id="kfDigHint" style="font-size:11px;color:var(--gray);margin-top:10px;line-height:1.6">Мы подготовим программу для вышивальной машины — это входит в стоимость. Файл останется у нас для быстрого повторного заказа.</p>
-</div>
-</div>
-<!-- ШАГ 6: Контакты -->
-<div class="kf-stage" data-step="6">
+<!-- ШАГ 5: Контакты -->
+<div class="kf-stage" data-step="5">
 <div class="kf-form-grid">
 <div class="kf-form-field">
 <label>Компания / организация</label>
@@ -2354,15 +2320,6 @@ body.menu-open{
           Заявка отправлена! Мы получили ваш расчёт и свяжемся с вами в течение рабочего дня. Держите телефон под рукой.
         </div>
 </div>
-<!-- Мультизаказ -->
-<div class="kf-multiblock" id="kfMultiBlock">
-<div class="kf-multiblock-kicker">Нужно несколько позиций?</div>
-<div class="kf-multiblock-text">Добавьте эту позицию и настройте следующую — например, поло + кепки + шевроны. Итог суммируется автоматически.</div>
-<div class="kf-multiblock-btns">
-<button class="kf-multi-primary" id="kfAddAndNewBtn" type="button">+ Добавить и новая</button>
-<button class="kf-multi-secondary" id="kfSaveItemBtn" type="button">Сохранить позицию</button>
-</div>
-</div>
 <!-- Навигация -->
 <div class="kf-nav">
 <button class="kf-link-btn" disabled="" id="kfPrevBtn" type="button">← Назад</button>
@@ -2396,10 +2353,10 @@ body.menu-open{
 <!-- строки заполняются JS -->
 </div>
 <div class="kf-includes" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-<div class="kf-include"><span class="kf-include-dot"></span>Разработка программы для вышивки — бесплатно</div>
+<div class="kf-include"><span class="kf-include-dot"></span>Подготовка к запуску входит в стоимость</div>
 <div class="kf-include"><span class="kf-include-dot"></span>Пробный образец до запуска тиража</div>
-<div class="kf-include"><span class="kf-include-dot"></span>Программа хранится у нас для быстрых повторных заказов</div>
-<div class="kf-include"><span class="kf-include-dot"></span>Повторный заказ — без лишней подготовки</div>
+<div class="kf-include"><span class="kf-include-dot"></span>Сохраняем параметры для быстрых повторных заказов</div>
+<div class="kf-include"><span class="kf-include-dot"></span>Повторный заказ — без лишних согласований</div>
 <div class="kf-include"><span class="kf-include-dot"></span>Доставка по Обнинску и области</div>
 </div>
 </div>
