@@ -437,6 +437,9 @@
     const sub = unit * qty;
     const total = sub;
 
+    const minWarn = $('kfMinWarn');
+    if (minWarn && st.step < 5) minWarn.style.display = 'none';
+
     if (st.step >= 2 && stitches > 0) {
       totalEl.textContent = total.toLocaleString('ru-RU');
       perUnitEl.innerHTML = '<strong>' + unit.toLocaleString('ru-RU') + ' ₽</strong> за шт × ' + qty + ' шт';
@@ -630,9 +633,8 @@
 
 
     const priceBox = $('kfPriceBox');
-    const hidePrice = st.step >= 4 && cart.length > 0;
-    if (priceBox) priceBox.style.display = hidePrice ? 'none' : '';
-    if (summaryEl) summaryEl.style.display = hidePrice ? 'none' : '';
+    if (priceBox) priceBox.style.display = '';
+    if (summaryEl) summaryEl.style.display = '';
 
     calcPrice();
   }
@@ -807,9 +809,6 @@
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       if (st.step < st.maxStep) {
-        if (st.step === 3 && cart.length > 0 && st.editId === null) {
-          addToCart();
-        }
         st.step++;
         renderStep();
       }
@@ -836,9 +835,23 @@
 
       if (!ok) return;
 
-      if (cart.length === 0 && st.step >= 3) addToCart();
+      const current = calcPrice();
+      if (!current.size.w || !current.size.h || !current.sub) {
+        priceNote.textContent = 'Укажите размер — калькулятор покажет ориентировочную стоимость';
+        return;
+      }
 
-      const grand = cart.reduce((sum, item) => sum + item.sub, 0);
+      const lbl = itemLabel();
+      const item = {
+        name: lbl.name,
+        meta: lbl.meta,
+        qty: current.qty,
+        unit: current.unit,
+        sub: current.sub,
+        details: lbl.details || ''
+      };
+
+      const grand = item.sub;
       if (grand < MIN_ORDER) {
         const minWarn = $('kfMinWarn');
         if (minWarn) {
@@ -847,11 +860,14 @@
           minWarn.innerHTML =
             '<strong style="color:var(--red)">Минимальная сумма заказа — 2 500 ₽</strong><br>' +
             'Текущий итог: ' + grand.toLocaleString('ru-RU') + ' ₽ — не хватает ' + diff + ' ₽. ' +
-            'Увеличьте тираж или добавьте ещё позицию.';
+            'Увеличьте тираж, размер нанесения или отправьте заявку на индивидуальный расчёт.';
           minWarn.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         return;
       }
+
+      const minWarn = $('kfMinWarn');
+      if (minWarn) minWarn.style.display = 'none';
 
       const payload = {
         org: $('kfLeadOrg').value,
@@ -859,20 +875,13 @@
         phone: phoneEl.value,
         email: $('kfLeadEmail').value,
         comment: $('kfLeadComment').value,
-        items: cart.map(i => ({
-          name: i.name,
-          meta: i.meta,
-          qty: i.qty,
-          unit: i.unit,
-          sub: i.sub,
-          details: i.details || ''
-        })),
+        items: [item],
         grandTotal: grand,
         deadline: st.deadline
       };
 
       let tgText = '🛒 *Заказ из конфигуратора Мируся*\n\n';
-      tgText += '*Позиции:*\n';
+      tgText += '*Позиция:*\n';
       payload.items.forEach(i => {
         tgText += `• ${i.name} · ${i.meta} — ${i.sub.toLocaleString('ru-RU')} ₽\n`;
         if (i.details) tgText += `  _${i.details}_\n`;
