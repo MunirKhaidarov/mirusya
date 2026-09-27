@@ -572,6 +572,345 @@ footer button.privacy-open:focus-visible{
 }
 </style>
 
+
+<style id="v56-case-popup">
+.case-card-interactive{
+  cursor:pointer;
+}
+.case-card-interactive .case-media{
+  position:relative;
+}
+.case-card-interactive .case-media:after{
+  content:'СМОТРЕТЬ КЕЙС  ↗';
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  z-index:3;
+  padding:10px 13px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:rgba(8,9,7,.76);
+  backdrop-filter:blur(10px);
+  color:#f1f2ed;
+  font:600 8px/1 var(--mono);
+  letter-spacing:.07em;
+  opacity:0;
+  transform:translateY(6px);
+  transition:.25s ease;
+}
+.case-card-interactive:hover .case-media:after,
+.case-card-interactive:focus-visible .case-media:after{
+  opacity:1;
+  transform:translateY(0);
+}
+.case-card-interactive:focus-visible{
+  outline:2px solid var(--lime);
+  outline-offset:5px;
+}
+
+.case-modal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+}
+.case-modal.is-open{display:flex}
+.case-modal-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(4,5,4,.86);
+  backdrop-filter:blur(12px);
+}
+.case-modal-panel{
+  position:relative;
+  z-index:1;
+  width:min(1460px,96vw);
+  height:min(860px,90vh);
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 340px;
+  border:1px solid #30342c;
+  border-radius:24px;
+  background:#0b0d0a;
+  box-shadow:0 35px 120px rgba(0,0,0,.62);
+}
+.case-gallery{
+  position:relative;
+  min-width:0;
+  background:#050605;
+  overflow:hidden;
+}
+.case-slides{
+  height:100%;
+  display:flex;
+  transition:transform .45s cubic-bezier(.22,.7,.2,1);
+}
+.case-slide{
+  min-width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  padding:28px;
+}
+.case-slide img{
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:14px;
+}
+.case-gallery-top{
+  position:absolute;
+  z-index:4;
+  top:20px;
+  left:22px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 12px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  background:rgba(7,8,6,.72);
+  backdrop-filter:blur(10px);
+  color:#d7dbd0;
+  font:600 8px/1 var(--mono);
+  letter-spacing:.07em;
+}
+.case-gallery-nav{
+  position:absolute;
+  z-index:4;
+  left:20px;
+  right:20px;
+  top:50%;
+  display:flex;
+  justify-content:space-between;
+  pointer-events:none;
+  transform:translateY(-50%);
+}
+.case-gallery-nav button{
+  pointer-events:auto;
+  width:48px;
+  height:48px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:50%;
+  background:rgba(10,11,9,.76);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  cursor:pointer;
+  backdrop-filter:blur(10px);
+}
+.case-gallery-nav button:hover{
+  border-color:var(--lime);
+  color:var(--lime);
+}
+.case-dots{
+  position:absolute;
+  z-index:4;
+  left:50%;
+  bottom:20px;
+  display:flex;
+  gap:7px;
+  transform:translateX(-50%);
+}
+.case-dots button{
+  width:22px;
+  height:3px;
+  padding:0;
+  border:0;
+  border-radius:99px;
+  background:rgba(255,255,255,.28);
+  cursor:pointer;
+}
+.case-dots button.active{background:var(--lime)}
+
+.case-modal-info{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  padding:30px 28px 26px;
+  border-left:1px solid #252922;
+}
+.case-close{
+  align-self:flex-end;
+  width:46px;
+  height:46px;
+  margin-bottom:40px;
+  border:1px solid #32372e;
+  border-radius:50%;
+  background:#12150f;
+  color:#f3f3ee;
+  font-size:24px;
+  cursor:pointer;
+}
+.case-close:hover{border-color:var(--lime);color:var(--lime)}
+.case-modal-kicker{
+  margin-bottom:12px;
+  font:600 8px/1 var(--mono);
+  letter-spacing:.08em;
+  color:var(--lime);
+}
+.case-modal-info h3{
+  margin:0 0 18px;
+  font-size:clamp(38px,4vw,58px);
+  line-height:.94;
+  letter-spacing:-.045em;
+  font-weight:560;
+}
+.case-modal-info>p{
+  margin:0;
+  color:#979c92;
+  font-size:13px;
+  line-height:1.65;
+}
+.case-modal-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:24px;
+}
+.case-modal-tags span{
+  padding:8px 10px;
+  border:1px solid #30342c;
+  border-radius:999px;
+  color:#9da197;
+  font:550 7px/1 var(--mono);
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.case-modal-foot{
+  margin-top:auto;
+  padding-top:24px;
+  border-top:1px solid #262a23;
+  color:#676c63;
+  font:550 8px/1.5 var(--mono);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+body.case-modal-open{overflow:hidden}
+
+@media(max-width:900px){
+  .case-modal{padding:12px}
+  .case-modal-panel{
+    width:min(680px,100%);
+    height:min(92vh,900px);
+    grid-template-columns:1fr;
+    grid-template-rows:minmax(0,1fr) auto;
+    border-radius:18px;
+  }
+  .case-modal-info{
+    border-left:0;
+    border-top:1px solid #252922;
+    padding:18px 20px 20px;
+  }
+  .case-close{
+    position:absolute;
+    z-index:6;
+    right:16px;
+    top:-62px;
+    margin:0;
+    background:rgba(10,11,9,.88);
+  }
+  .case-modal-info h3{font-size:34px;margin-bottom:10px}
+  .case-modal-info>p{font-size:12px}
+  .case-modal-tags{margin-top:14px}
+  .case-modal-foot{display:none}
+  .case-slide{padding:16px}
+  .case-gallery-nav{left:12px;right:12px}
+  .case-gallery-nav button{width:42px;height:42px}
+}
+</style>
+
+
+<style id="v57-case-popup-extensions">
+.case-modal.is-single .case-gallery-nav,
+.case-modal.is-single .case-dots{display:none}
+.case-modal-project-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+  color:#767b71;
+  font:600 8px/1 var(--mono);
+  letter-spacing:.075em;
+  text-transform:uppercase;
+}
+.case-modal-project-meta i{
+  width:22px;
+  height:2px;
+  background:var(--lime);
+  display:block;
+}
+.case-card-interactive .case-info{
+  position:relative;
+}
+.case-card-interactive .case-info:after{
+  content:'↗';
+  position:absolute;
+  right:20px;
+  bottom:19px;
+  color:var(--lime);
+  font-size:18px;
+  line-height:1;
+}
+</style>
+
+
+<style id="v58-case-gallery-fix">
+/* Reset default figure margins: they were making portrait photos overflow
+   the gallery height and get visually cropped. */
+.case-slide{
+  margin:0 !important;
+  box-sizing:border-box;
+  min-width:100%;
+  width:100%;
+  height:100%;
+  padding:28px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+
+.case-slide img{
+  display:block;
+  width:auto !important;
+  height:auto !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  border-radius:14px;
+}
+
+/* Single portrait photo (Moto Krylya): give it a calmer editorial frame. */
+.case-modal.is-single .case-slide{
+  padding:42px 56px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(217,255,40,.035), transparent 52%),
+    #050605;
+}
+.case-modal.is-single .case-slide img{
+  max-width:min(78%, 860px) !important;
+  max-height:calc(100% - 4px) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.42);
+}
+
+@media(max-width:900px){
+  .case-slide{padding:14px}
+  .case-modal.is-single .case-slide{padding:18px}
+  .case-modal.is-single .case-slide img{
+    max-width:100% !important;
+    max-height:100% !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div aria-hidden="true" class="page-blinds"><i></i><i></i><i></i><i></i></div>
@@ -720,7 +1059,7 @@ footer button.privacy-open:focus-visible{
 </article>
 <article class="case-card reveal" data-case="РИО × СМТ МАКС">
 <div class="case-media visual-slot case-blue has-image"><img class="case-media-image" src="case-rio-v42.webp" alt="Стилизованный визуал кейса РИО × СМТ Макс"/><div class="slot-top"><span>ПРОЕКТ / 002</span><span>ФОТО / КЕЙС</span></div></div>
-<div class="case-info"><div><span>Спортивная школа / костюмы</span><h3>РИО × СМТ Макс</h3></div><p>Персонализированные спортивные костюмы для детской команды. Проект в производстве.</p></div>
+<div class="case-info"><div><span>Спортивная школа / костюмы</span><h3>РИО × СМТ Макс</h3></div><p>Персонализированные спортивные костюмы для команды: логотипы на груди и имена на спине.</p></div>
 </article>
 <article class="case-card reveal" data-case="МОТО КРЫЛЬЯ">
 <div class="case-media visual-slot case-orange has-image"><img class="case-media-image" src="case-moto-krylya-v44.webp" alt="Стилизованный визуал кейса Мото Крылья"/><div class="slot-top"><span>ПРОЕКТ / 003</span><span>ФОТО / КЕЙС</span></div></div>
@@ -729,6 +1068,47 @@ footer button.privacy-open:focus-visible{
 </div>
 </div>
 </section>
+
+
+<div class="case-modal" id="caseModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="caseModalTitle">
+  <div class="case-modal-backdrop" data-case-close></div>
+
+  <div class="case-modal-panel">
+    <div class="case-gallery" id="caseGallery">
+      <div class="case-gallery-top">
+        <span id="caseCounter">01 / 01</span>
+        <span>РЕАЛЬНЫЕ ФОТО</span>
+      </div>
+
+      <div class="case-slides" id="caseSlides"></div>
+
+      <div class="case-gallery-nav">
+        <button type="button" data-case-prev aria-label="Предыдущее фото">←</button>
+        <button type="button" data-case-next aria-label="Следующее фото">→</button>
+      </div>
+
+      <div class="case-dots" id="caseDots" aria-label="Фотографии кейса"></div>
+    </div>
+
+    <aside class="case-modal-info">
+      <button class="case-close" type="button" data-case-close aria-label="Закрыть">×</button>
+
+      <div class="case-modal-project-meta">
+        <i></i>
+        <span id="caseProjectNumber">ПРОЕКТ / 001</span>
+      </div>
+
+      <div class="case-modal-kicker" id="caseCategory">КЕЙС</div>
+      <h3 id="caseModalTitle">Кейс</h3>
+      <p id="caseDescription"></p>
+      <div class="case-modal-tags" id="caseTags"></div>
+
+      <div class="case-modal-foot">Мируся / реальные проекты</div>
+    </aside>
+  </div>
+</div>
+
+
 <section class="embroidery section light-section" id="embroidery">
 <div class="shell embroidery-grid">
 <div class="reveal"><div class="section-code dark-code"><span>(05)</span><span>—</span><span>МАШИННАЯ ВЫШИВКА</span></div><h2 class="section-title dark-title">Вышивка доступнее,<br/>чем кажется.</h2></div>
@@ -1134,6 +1514,144 @@ footer button.privacy-open:focus-visible{
     const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
     if (!inside) closeDialog();
   });
+})();
+</script>
+
+<script id="v57-case-popup-js">
+(() => {
+  const caseData = {"СВОБОДА": {"project": "ПРОЕКТ / 001", "title": "Свобода", "category": "ФИТНЕС-СТУДИЯ / ФУТБОЛКИ", "description": "Брендированные футболки для тренеров студии женского фитнеса. В галерее — команда в готовых изделиях и кадр с процесса вышивки.", "tags": ["футболки", "машинная вышивка", "команда"], "images": [["case-svoboda-real-01.webp", "Команда фитнес-студии «Свобода» в брендированных футболках"], ["case-svoboda-real-02.webp", "Процесс вышивки на футболке для студии «Свобода»"]]}, "РИО × СМТ МАКС": {"project": "ПРОЕКТ / 002", "title": "РИО × СМТ Макс", "category": "СПОРТИВНАЯ КОМАНДА / КОСТЮМЫ", "description": "Единый комплект голубых спортивных костюмов для команды. На груди — фирменная символика, на спине — персонализация участников.", "tags": ["спортивные костюмы", "логотипы", "персонализация"], "images": [["case-rio-real-01.webp", "Команда РИО × СМТ Макс в голубых спортивных костюмах, вид спереди"], ["case-rio-real-02.webp", "Команда РИО × СМТ Макс, персонализация на спине"]]}, "МОТО КРЫЛЬЯ": {"project": "ПРОЕКТ / 003", "title": "Мото Крылья", "category": "МОТОКЛУБ / ШЕВРОНЫ", "description": "Комплект клубных вышитых шевронов разных размеров и форм: верхняя и нижняя дуги, центральная эмблема и малый шеврон.", "tags": ["шевроны", "нашивки", "машинная вышивка"], "images": [["case-moto-real-01.webp", "Комплект вышитых шевронов мотоклуба «Мото Крылья»"]]}};
+
+  const modal = document.getElementById('caseModal');
+  const slides = document.getElementById('caseSlides');
+  const dotsWrap = document.getElementById('caseDots');
+  const counter = document.getElementById('caseCounter');
+  const projectEl = document.getElementById('caseProjectNumber');
+  const categoryEl = document.getElementById('caseCategory');
+  const titleEl = document.getElementById('caseModalTitle');
+  const descriptionEl = document.getElementById('caseDescription');
+  const tagsEl = document.getElementById('caseTags');
+  const gallery = document.getElementById('caseGallery');
+
+  if (!modal || !slides || !dotsWrap || !counter) return;
+
+  let index = 0;
+  let current = null;
+  let triggerCard = null;
+  let startX = null;
+
+  const cards = [...document.querySelectorAll('.case-card[data-case]')];
+
+  cards.forEach(card => {
+    if (!caseData[card.dataset.case]) return;
+    card.classList.add('case-card-interactive');
+    card.setAttribute('role','button');
+    card.setAttribute('tabindex','0');
+    card.setAttribute('aria-haspopup','dialog');
+    card.setAttribute('aria-label',`Открыть кейс «${caseData[card.dataset.case].title}»`);
+
+    card.addEventListener('click', () => openCase(card.dataset.case, card));
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openCase(card.dataset.case, card);
+      }
+    });
+  });
+
+  function buildSlides() {
+    if (!current) return;
+
+    slides.innerHTML = current.images.map(([src, alt]) =>
+      `<figure class="case-slide"><img src="${src}" alt="${alt.replace(/"/g,'&quot;')}" loading="eager"/></figure>`
+    ).join('');
+
+    dotsWrap.innerHTML = current.images.map((_, i) =>
+      `<button type="button" data-case-dot="${i}" aria-label="Фото ${i + 1}"></button>`
+    ).join('');
+
+    [...dotsWrap.querySelectorAll('[data-case-dot]')].forEach(btn => {
+      btn.addEventListener('click', () => {
+        index = Number(btn.dataset.caseDot || 0);
+        render();
+      });
+    });
+
+    modal.classList.toggle('is-single', current.images.length <= 1);
+  }
+
+  function render() {
+    const total = current?.images.length || 1;
+    slides.style.transform = `translateX(-${index * 100}%)`;
+    counter.textContent = `${String(index + 1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
+
+    [...dotsWrap.querySelectorAll('[data-case-dot]')].forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
+    });
+  }
+
+  function openCase(key, card) {
+    current = caseData[key];
+    if (!current) return;
+
+    triggerCard = card;
+    index = 0;
+
+    projectEl.textContent = current.project;
+    categoryEl.textContent = current.category;
+    titleEl.textContent = current.title;
+    descriptionEl.textContent = current.description;
+    tagsEl.innerHTML = current.tags.map(tag => `<span>${tag}</span>`).join('');
+
+    buildSlides();
+    render();
+
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.classList.add('case-modal-open');
+
+    setTimeout(() => modal.querySelector('.case-close')?.focus(), 20);
+  }
+
+  function closeCase() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('case-modal-open');
+    triggerCard?.focus();
+  }
+
+  function next() {
+    if (!current || current.images.length <= 1) return;
+    index = (index + 1) % current.images.length;
+    render();
+  }
+
+  function prev() {
+    if (!current || current.images.length <= 1) return;
+    index = (index - 1 + current.images.length) % current.images.length;
+    render();
+  }
+
+  modal.querySelectorAll('[data-case-close]').forEach(el => el.addEventListener('click', closeCase));
+  modal.querySelector('[data-case-next]')?.addEventListener('click', next);
+  modal.querySelector('[data-case-prev]')?.addEventListener('click', prev);
+
+  modal.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCase();
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+
+  gallery?.addEventListener('touchstart', e => {
+    startX = e.touches[0]?.clientX ?? null;
+  }, {passive:true});
+
+  gallery?.addEventListener('touchend', e => {
+    if (startX == null) return;
+    const endX = e.changedTouches[0]?.clientX ?? startX;
+    const dx = endX - startX;
+    if (Math.abs(dx) > 45) dx < 0 ? next() : prev();
+    startX = null;
+  }, {passive:true});
 })();
 </script>
 
